@@ -5,7 +5,7 @@ import javafx.scene.layout.GridPane;
 
 import static com.example.ultimatetictactoe.Constants.*;
 
-public class UltimateTicTaceToeGame {
+public class UltimateTicTacToeBackEndGame {
     private final Player player1;
     private final Player player2;
     public boolean player1Turn = true;
@@ -13,7 +13,7 @@ public class UltimateTicTaceToeGame {
     private int[][] miniGridWinsBoard;
     public boolean isTie = false;
 
-    public UltimateTicTaceToeGame() {
+    public UltimateTicTacToeBackEndGame() {
         player1 = new Player(1, PLAYER1_LABEL, PLAYER1_LABEL_COLOR, PLAYER1_LABEL_SIZE);
         player2 = new Player(2, PLAYER2_LABEL, PLAYER2_LABEL_COLOR, PLAYER2_LABEL_SIZE);
 

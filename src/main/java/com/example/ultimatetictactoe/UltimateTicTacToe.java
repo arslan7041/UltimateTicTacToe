@@ -18,9 +18,9 @@ import java.util.Set;
 
 import static com.example.ultimatetictactoe.Constants.*;
 
-public class UltimateTicTacToeUI extends Application {
+public class UltimateTicTacToe extends Application {
 
-    private UltimateTicTaceToeGame game;
+    private UltimateTicTacToeBackEndGame game;
     private GridPane mainGrid;
     private Set<Node> clickableMiniGrids;
     private Label turnLabel;
@@ -32,7 +32,7 @@ public class UltimateTicTacToeUI extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        game = new UltimateTicTaceToeGame();
+        game = new UltimateTicTacToeBackEndGame();
         mainGrid = new GridPane();
         initializeGrid();
         clickableMiniGrids = new HashSet<>(mainGrid.getChildren());
