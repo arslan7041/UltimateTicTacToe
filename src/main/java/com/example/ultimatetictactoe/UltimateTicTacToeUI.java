@@ -44,14 +44,22 @@ public class UltimateTicTacToeUI extends Application {
         initializeTurnLabel();
         initializeResultLabel();
 
+        Button player1UndoButton = createUndoButton(game.getPlayer1());
+        Button player2UndoButton = createUndoButton(game.getPlayer2());
+
+        VBox undoButtonsVerticalBox = new VBox();
+        undoButtonsVerticalBox.getChildren().addAll(player1UndoButton, player2UndoButton);
+        undoButtonsVerticalBox.setSpacing(10);
+        undoButtonsVerticalBox.setPadding(new Insets(50, 0, 0, 0));
+
         Button startNewGameButton = new Button(START_NEW_GAME_BUTTON_TEXT);
         startNewGameButton.setStyle(String.format("-fx-border-color: black; -fx-border-width: %d; -fx-font-weight: bold; -fx-font-size: %fem;",
                 START_NEW_GAME_BUTTON_BORDER_WIDTH, START_NEW_GAME_BUTTON_FONT_SIZE));
         startNewGameButton.setOnAction(e -> handleStartNewGameButtonClick());
 
         VBox verticalBox = new VBox();
-        verticalBox.getChildren().addAll(resultLabel, startNewGameButton);
-        verticalBox.setPadding(new Insets(325, 0, 0, 0)); // padding above to push resultLabel and startNewGameButton down
+        verticalBox.getChildren().addAll(resultLabel, startNewGameButton, undoButtonsVerticalBox);
+        verticalBox.setPadding(new Insets(275, 0, 0, 0)); // padding above to push resultLabel and startNewGameButton down
 
         HBox horizontalBox = new HBox(scrollPane, verticalBox);
 
@@ -112,6 +120,14 @@ public class UltimateTicTacToeUI extends Application {
         resultLabel = new Label();
         resultLabel.setAlignment(Pos.CENTER);
         resultLabel.setVisible(false);  // Initially set to invisible
+    }
+
+    private Button createUndoButton(Player player){
+        Button undoButton = new Button();
+        undoButton.setText(String.format("Player %s undo (%d left)", player.getLabelValue(), player.undos));
+        undoButton.setStyle(String.format("-fx-text-fill: %s; -fx-font-weight: bold; -fx-font-size: %fem; -fx-border-color: %s; -fx-border-width: %d;",
+                player.getLabelColor(), UNDO_BUTTON_FONT_SIZE, player.getLabelColor(), UNDO_BUTTON_BORDER_WIDTH));
+        return undoButton;
     }
 
     private void initializeGrid() {
