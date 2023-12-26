@@ -56,10 +56,10 @@ public class UltimateTicTacToeBackEndGame {
         int[][] miniGridArr = grid[i][j];
         if (checkGridRows(miniGridArr) || checkGridColumns(miniGridArr) || checkGridDiagonals(miniGridArr)) {
             if (player1Turn) {
-                getPlayer1().wins++;
+                player1.wins++;
                 miniGridWinsBoard[i][j] = 1;
             } else {
-                getPlayer2().wins++;
+                player2.wins++;
                 miniGridWinsBoard[i][j] = 2;
             }
             return true;
@@ -130,11 +130,49 @@ public class UltimateTicTacToeBackEndGame {
                 (grid[0][2] == grid[1][1] && grid[1][1] == grid[2][0] && grid[0][2] != 0 && grid[0][2] != -1);
     }
 
+    public void undoMove(Button button, GridPane miniGrid){
+        int i = GridPane.getRowIndex(miniGrid);
+        int j = GridPane.getColumnIndex(miniGrid);
+        int row = GridPane.getRowIndex(button);
+        int col = GridPane.getColumnIndex(button);
+
+        grid[i][j][row][col] = 0;
+    }
+
+    public void undoMiniGridCompletionAndWin(GridPane miniGrid){
+        int i = GridPane.getRowIndex(miniGrid);
+        int j = GridPane.getColumnIndex(miniGrid);
+
+        if (miniGridWinsBoard[i][j] == 1) {
+            player1.wins--;
+        } else if(miniGridWinsBoard[i][j] == 2) {
+            player2.wins--;
+        }
+        miniGridWinsBoard[i][j] = 0;
+    }
+
     public Player getPlayer1() {
         return player1;
     }
 
     public Player getPlayer2() {
         return player2;
+    }
+
+    public void printUltimateTicTacToeGrid() {
+        for (int i = 0; i < 3; i++) {
+            for (int row = 0; row < 3; row++) {
+                for (int j = 0; j < 3; j++) {
+                    for (int col = 0; col < 3; col++) {
+                        System.out.print(grid[i][j][row][col] + " ");
+                    }
+                    System.out.print("  ");
+                }
+                System.out.println();
+            }
+            System.out.println();
+        }
+
+        System.out.println("=================================================");
     }
 }

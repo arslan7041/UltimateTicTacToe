@@ -18,13 +18,16 @@ import java.util.Set;
 
 import static com.example.ultimatetictactoe.Constants.*;
 
-public class UltimateTicTacToe extends Application {
+public class UltimateTicTacToe  extends Application {
 
     private UltimateTicTacToeBackEndGame game;
     private GridPane mainGrid;
     private Set<Node> clickableMiniGrids;
     private Label turnLabel;
     private Label resultLabel;
+    private Button player1UndoButton;
+    private Button player2UndoButton;
+    private LastMove lastMove;
 
     public static void main(String[] args) {
         launch(args);
@@ -44,8 +47,15 @@ public class UltimateTicTacToe extends Application {
         initializeTurnLabel();
         initializeResultLabel();
 
-        Button player1UndoButton = createUndoButton(game.getPlayer1());
-        Button player2UndoButton = createUndoButton(game.getPlayer2());
+        player1UndoButton = createUndoButton(game.getPlayer1());
+        player2UndoButton = createUndoButton(game.getPlayer2());
+        player1UndoButton.setDisable(true);
+        player2UndoButton.setDisable(true);
+
+        player1UndoButton.setOnAction(e -> handleUndoButtonClick());
+        player2UndoButton.setOnAction(e -> handleUndoButtonClick());
+
+        lastMove = null;
 
         VBox undoButtonsVerticalBox = new VBox();
         undoButtonsVerticalBox.getChildren().addAll(player1UndoButton, player2UndoButton);
@@ -71,6 +81,59 @@ public class UltimateTicTacToe extends Application {
         primaryStage.setScene(scene);
         primaryStage.setTitle("Ultimate Tic Tac Toe");
         primaryStage.show();
+    }
+
+    private void handleUndoButtonClick() {
+        game.player1Turn = ! game.player1Turn;
+        toggleTurnLabel();
+        Button button = lastMove.getButton();
+        GridPane miniGrid = lastMove.getMiniGrid();
+        Set<Node> lastClickableMiniGrids = lastMove.getClickableMiniGrids();
+
+        for(Node node : clickableMiniGrids){
+            toggleHighlightingOfMiniGrid((GridPane) node, null);
+        }
+
+        clickableMiniGrids = lastClickableMiniGrids;
+
+        DropShadow glow = new DropShadow();
+        glow.setColor(Color.YELLOW);
+        glow.setSpread(0.8); // Set the width of the glow
+
+        if(clickableMiniGrids.size() < 9){
+            for(Node node : clickableMiniGrids){
+                toggleHighlightingOfMiniGrid((GridPane) node, glow);
+            }
+        }
+        button.setGraphic(null);
+
+        game.undoMove(button, miniGrid);
+
+        if(miniGrid.isDisabled()){
+            miniGrid.setDisable(false);
+            miniGrid.setEffect(null);
+            miniGrid.setBackground(null);
+            miniGrid.setStyle(String.format("-fx-border-color: black; -fx-border-width: %d;", MINIGRID_BORDER_WIDTH));
+            game.undoMiniGridCompletionAndWin(miniGrid);
+        }
+        if(mainGrid.isDisabled()){
+            mainGrid.setDisable(false);
+            resultLabel.setVisible(false);
+            turnLabel.setVisible(true);
+            if(game.isTie){
+                game.isTie = false;
+            } else if(game.getPlayer1().wonGame){
+                game.getPlayer1().wonGame = false;
+            } else if(game.getPlayer2().wonGame){
+                game.getPlayer2().wonGame = false;
+            }
+        }
+
+        if(game.player1Turn) {
+            player1UndoButton.setDisable(true);
+        } else{
+            player2UndoButton.setDisable(true);
+        }
     }
 
     private void  handleStartNewGameButtonClick() {
@@ -167,18 +230,29 @@ public class UltimateTicTacToe extends Application {
             buttonLabel.setStyle(String.format("-fx-text-fill: %s; -fx-font-weight: bold; -fx-font-size: %dem;", player.getLabelColor(), player.getLabelSize()));
             button.setGraphic(buttonLabel);
 
+            lastMove = new LastMove(button, miniGrid, new HashSet<>(clickableMiniGrids)); // record move data in case of undo
+
             backEndGameLogic(button, miniGrid);
             clearClickableMiniGrids(miniGrid);
             boolean gameHasEnded = showResultIfGameEnded();
 
+            game.player1Turn = !game.player1Turn;
             if(!gameHasEnded){
                 updateClickableMiniGrids(button);
-                game.player1Turn = !game.player1Turn;
                 toggleTurnLabel();
             }else{
                 mainGrid.setDisable(true);
                 turnLabel.setVisible(false);
             }
+
+            if(player.getId() == 1){
+                player1UndoButton.setDisable(false);
+                player2UndoButton.setDisable(true);
+            }else{
+                player2UndoButton.setDisable(false);
+                player1UndoButton.setDisable(true);
+            }
+            game.printUltimateTicTacToeGrid();
         }
     }
 
