@@ -1,17 +1,19 @@
 package com.example.ultimatetictactoe;
 
+import javafx.animation.Animation;
+import javafx.animation.FadeTransition;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.effect.DropShadow;
-import javafx.scene.effect.GaussianBlur;
-import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -96,24 +98,17 @@ public class UltimateTicTacToe  extends Application {
 
         clickableMiniGrids = lastClickableMiniGrids;
 
-        DropShadow glow = new DropShadow();
-        glow.setColor(Color.YELLOW);
-        glow.setSpread(0.8); // Set the width of the glow
-
         if(clickableMiniGrids.size() < 9){
             for(Node node : clickableMiniGrids){
-                toggleHighlightingOfMiniGrid((GridPane) node, glow);
+                toggleHighlightingOfMiniGrid((GridPane) node, GameUtils.getGlowEffect());
             }
         }
-        button.setGraphic(null);
 
+        button.setGraphic(null);
         game.undoMove(button, miniGrid);
 
         if(miniGrid.isDisabled()){
-            miniGrid.setDisable(false);
-            miniGrid.setEffect(null);
-            miniGrid.setBackground(null);
-            miniGrid.setStyle(String.format("-fx-border-color: black; -fx-border-width: %d;", MINIGRID_BORDER_WIDTH));
+            GameUtils.revertStateOfMiniGrid(miniGrid);
             game.undoMiniGridCompletionAndWin(miniGrid);
         }
         if(mainGrid.isDisabled()){
@@ -154,10 +149,7 @@ public class UltimateTicTacToe  extends Application {
                 mainGrid.setDisable(false);
                 for(Node miniGridNode : mainGrid.getChildren()){
                     GridPane miniGrid = (GridPane) miniGridNode;
-                    miniGrid.setDisable(false);
-                    miniGrid.setEffect(null);
-                    miniGrid.setBackground(null);
-                    miniGrid.setStyle(String.format("-fx-border-color: black; -fx-border-width: %d;", MINIGRID_BORDER_WIDTH));
+                    GameUtils.revertStateOfMiniGrid(miniGrid);
                     for(Node buttonNode : miniGrid.getChildren()){
                         Button button = (Button) buttonNode;
                         button.setDisable(false);
@@ -222,7 +214,7 @@ public class UltimateTicTacToe  extends Application {
     }
 
     private void handleCellButtonClick(Button button) {
-        GridPane miniGrid = findParentGridPane(button);
+        GridPane miniGrid = GameUtils.findParentGridPane(button);
         if (isButtonEmpty(button) && isMiniGridClickable(miniGrid)) {
             Player player = game.player1Turn ? game.getPlayer1() : game.getPlayer2();
             Label buttonLabel = new Label();
@@ -252,7 +244,7 @@ public class UltimateTicTacToe  extends Application {
                 player2UndoButton.setDisable(false);
                 player1UndoButton.setDisable(true);
             }
-            game.printUltimateTicTacToeGrid();
+//            game.printUltimateTicTacToeGrid();
         }
     }
 
@@ -267,14 +259,6 @@ public class UltimateTicTacToe  extends Application {
         return button.getGraphic() == null;
     }
 
-    private GridPane findParentGridPane(Node node) {
-        Parent parent = node.getParent();
-        while (parent != null && !(parent instanceof GridPane)) {
-            parent = parent.getParent();
-        }
-        return (GridPane) parent;
-    }
-
     private boolean showResultIfGameEnded(){
         if(game.isTie || game.getPlayer1().wonGame || game.getPlayer2().wonGame){
             if(game.isTie){
@@ -285,6 +269,12 @@ public class UltimateTicTacToe  extends Application {
                 resultLabel.setText(String.format("PLAYER %s WON!", winner.getLabelValue()));
                 resultLabel.setStyle(String.format("-fx-font-size: %s; -fx-font-weight: bold; -fx-text-fill: %s;", RESULT_LABEL_FONT_SIZE, winner.getLabelColor()));
             }
+
+            FadeTransition fadeTransition = new FadeTransition(Duration.seconds(0.75), resultLabel);
+            fadeTransition.setFromValue(1.0);
+            fadeTransition.setToValue(0.0);
+            fadeTransition.setCycleCount(Animation.INDEFINITE);
+            fadeTransition.play();
             resultLabel.setVisible(true);
             return true;
         }
@@ -296,20 +286,14 @@ public class UltimateTicTacToe  extends Application {
         if(game.checkMiniGridForWin(miniGrid)){
             miniGrid.setDisable(true);
             if(game.player1Turn){
-                miniGrid.setBackground(new Background(new BackgroundFill(Color.BLUE,
-                        CornerRadii.EMPTY,
-                        Insets.EMPTY)));
+                miniGrid.setBackground(GameUtils.getPlayer1MiniGridBackground());
                 miniGrid.setStyle("-fx-border-color: darkblue;  -fx-border-width: 4;");
             }else{
-                miniGrid.setBackground(new Background(new BackgroundFill(Color.rgb(255, 127, 127),
-                        CornerRadii.EMPTY,
-                        Insets.EMPTY)));
-                miniGrid.setStyle("-fx-border-color: darkred;  -fx-border-width: 4;");
+                miniGrid.setBackground(GameUtils.getPlayer2MiniGridBackground());
+                miniGrid.setStyle("-fx-border-color: darkred; -fx-border-width: 4;");
             }
         }else if(game.isGridComplete(miniGrid)){
-            GaussianBlur blur = new GaussianBlur();
-            blur.setRadius(5);
-            miniGrid.setEffect(blur);
+            miniGrid.setEffect(GameUtils.getBlurEffect());
             miniGrid.setDisable(true);
         }
         game.checkGameForWin();
@@ -334,17 +318,14 @@ public class UltimateTicTacToe  extends Application {
         int buttonX = GridPane.getRowIndex(button);
         int buttonY = GridPane.getColumnIndex(button);
         GridPane nextMiniGrid = (GridPane)getNodeGivenIndices(buttonX, buttonY);
-        DropShadow glow = new DropShadow();
-        glow.setColor(Color.YELLOW);
-        glow.setSpread(0.8); // Set the width of the glow
 
         if(!nextMiniGrid.isDisabled()){
-            toggleHighlightingOfMiniGrid(nextMiniGrid, glow);
+            toggleHighlightingOfMiniGrid(nextMiniGrid, GameUtils.getGlowEffect());
             clickableMiniGrids.add(nextMiniGrid);
         }else{
             for(Node node : mainGrid.getChildren()){
                 if(!node.isDisabled()){
-                    toggleHighlightingOfMiniGrid((GridPane) node, glow);
+                    toggleHighlightingOfMiniGrid((GridPane) node, GameUtils.getGlowEffect());
                     clickableMiniGrids.add(node);
                 }
             }
