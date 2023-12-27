@@ -71,7 +71,8 @@ public class UltimateTicTacToe  extends Application {
 
         VBox verticalBox = new VBox();
         verticalBox.getChildren().addAll(resultLabel, startNewGameButton, undoButtonsVerticalBox);
-        verticalBox.setPadding(new Insets(275, 0, 0, 0)); // padding above to push resultLabel and startNewGameButton down
+        verticalBox.setPadding(new Insets(245, 0, 0, 0)); // padding above to push resultLabel and startNewGameButton down
+        VBox.setMargin(startNewGameButton, new Insets(30, 0, 0, 0));
 
         HBox horizontalBox = new HBox(scrollPane, verticalBox);
 

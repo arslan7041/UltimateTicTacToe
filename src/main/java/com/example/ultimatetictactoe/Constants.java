@@ -15,7 +15,7 @@ public class Constants {
     public static final String PLAYER2_LABEL = "O";
 
     public static final int TURN_LABEL_FONT_SIZE = 25;
-    public static final int RESULT_LABEL_FONT_SIZE = 25;
+    public static final int RESULT_LABEL_FONT_SIZE = 33;
 
     public static final String START_NEW_GAME_BUTTON_TEXT = "Start New Game";
     public static final double START_NEW_GAME_BUTTON_FONT_SIZE = 2;
