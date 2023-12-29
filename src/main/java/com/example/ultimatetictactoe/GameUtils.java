@@ -69,12 +69,16 @@ public class GameUtils {
         return (GridPane) parent;
     }
 
+    public static GridPane getGridPaneGivenIndices(GridPane mainGrid, int row, int col) {
+        return (GridPane) mainGrid.getChildren().get(col * 3 + row);
+    }
+
     public static void setWinningMiniGrids(GridPane mainGrid, List<List<Integer>> winningCoordinates){
         winningMiniGrids = new ArrayList<>();
         for (List<Integer> coordinates : winningCoordinates) {
             int row = coordinates.get(0);
             int col = coordinates.get(1);
-            GridPane miniGrid = (GridPane)mainGrid.getChildren().get(col * 3 + row);
+            GridPane miniGrid = getGridPaneGivenIndices(mainGrid, row, col);
             winningMiniGrids.add(miniGrid);
         }
     }

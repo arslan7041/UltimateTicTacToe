@@ -41,7 +41,6 @@ public class UltimateTicTacToe extends Application {
     @Override
     public void start(Stage primaryStage) {
         game = new UltimateTicTacToeBackEndGame();
-        mainGrid = new GridPane();
         initializeGrid();
         clickableMiniGrids = new HashSet<>(mainGrid.getChildren());
 
@@ -202,6 +201,7 @@ public class UltimateTicTacToe extends Application {
     }
 
     private void initializeGrid() {
+        mainGrid = new GridPane();
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
                 GridPane miniGrid = createMiniGrid();
@@ -330,7 +330,7 @@ public class UltimateTicTacToe extends Application {
     private void updateClickableMiniGrids(Button button) {
         int buttonX = GridPane.getRowIndex(button);
         int buttonY = GridPane.getColumnIndex(button);
-        GridPane nextMiniGrid = (GridPane)getNodeGivenIndices(buttonX, buttonY);
+        GridPane nextMiniGrid = GameUtils.getGridPaneGivenIndices(mainGrid, buttonX, buttonY);
 
         if(!nextMiniGrid.isDisabled()){
             GameUtils.toggleMiniGridHighlighting(nextMiniGrid, true);
@@ -343,15 +343,6 @@ public class UltimateTicTacToe extends Application {
                 }
             }
         }
-    }
-
-    private Node getNodeGivenIndices(int buttonX, int buttonY) {
-        for(Node node : mainGrid.getChildren()){
-            if(GridPane.getRowIndex(node) == buttonX && GridPane.getColumnIndex(node) == buttonY){
-                return node;
-            }
-        }
-        return null;
     }
 
     private void flashBackgrounds(List<GridPane> winningMiniGrids) {
