@@ -36,5 +36,6 @@ public class Player {
     public void resetPlayer(){
         wins = 0;
         wonGame = false;
+        undos = 1;
     }
 }

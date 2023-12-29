@@ -18,25 +18,14 @@ public class UltimateTicTacToeBackEndGame {
     public boolean isTie = false;
 
     public UltimateTicTacToeBackEndGame() {
+        grid = new int[3][3][3][3];
+        miniGridWinsBoard = new int[3][3];
         player1 = new Player(1, PLAYER1_LABEL, PLAYER1_LABEL_COLOR, PLAYER1_LABEL_SIZE);
         player2 = new Player(2, PLAYER2_LABEL, PLAYER2_LABEL_COLOR, PLAYER2_LABEL_SIZE);
-
-        grid = new int[3][3][][];
-        for(int i = 0; i < 3; i++){
-            for(int j = 0; j < 3; j++){
-                grid[i][j] = new int[3][3];
-            }
-        }
-        miniGridWinsBoard = new int[3][3];
     }
 
     public void resetBackEndGame(){
-        grid = new int[3][3][][];
-        for(int i = 0; i < 3; i++){
-            for(int j = 0; j < 3; j++){
-                grid[i][j] = new int[3][3];
-            }
-        }
+        grid = new int[3][3][3][3];
         miniGridWinsBoard = new int[3][3];
         isTie = false;
         player1.resetPlayer();
@@ -71,7 +60,7 @@ public class UltimateTicTacToeBackEndGame {
         return false;
     }
 
-    public void checkGameForWin(){
+    public boolean checkGameForWinOrTie(){
         if (checkGridRows(miniGridWinsBoard) || checkGridColumns(miniGridWinsBoard) || checkGridDiagonals(miniGridWinsBoard)) {
             if (player1Turn) {
                 player1.wonGame = true;
@@ -87,6 +76,7 @@ public class UltimateTicTacToeBackEndGame {
                 player2.wonGame = true;
             }
         }
+        return player1.wonGame || player2.wonGame || isTie;
     }
 
     public boolean isGridComplete(GridPane grid){
