@@ -1,6 +1,5 @@
 package com.example.ultimatetictactoe;
 
-import javafx.animation.Animation;
 import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -10,8 +9,10 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
@@ -189,7 +190,7 @@ public class UltimateTicTacToe extends Application {
     private void initializeResultLabel() {
         resultLabel = new Label();
         resultLabel.setAlignment(Pos.CENTER);
-        resultLabel.setVisible(false);  // Initially set to invisible
+        resultLabel.setVisible(false);
     }
 
     private Button createUndoButton(Player player){
@@ -289,14 +290,13 @@ public class UltimateTicTacToe extends Application {
         }
 
         List<List<Integer>> winningCoordinates = game.getWinningCoordinates();
-        GameUtils.setWinningMiniGrids(mainGrid, winningCoordinates);
-        List<GridPane> winningMiniGrids = GameUtils.getWinningMiniGrids();
-        flashBackgrounds(winningMiniGrids);
+        if( !winningCoordinates.isEmpty() ){
+            GameUtils.setWinningMiniGrids(mainGrid, winningCoordinates);
+            List<GridPane> winningMiniGrids = GameUtils.getWinningMiniGrids();
+            flashBackgrounds(winningMiniGrids);
+        }
 
-        FadeTransition fadeTransition = new FadeTransition(Duration.seconds(0.75), resultLabel);
-        fadeTransition.setFromValue(1.0);
-        fadeTransition.setToValue(0.0);
-        fadeTransition.setCycleCount(Animation.INDEFINITE);
+        FadeTransition fadeTransition = GameUtils.getFadeTransition(resultLabel);
         fadeTransition.play();
         resultLabel.setVisible(true);
     }
@@ -322,9 +322,7 @@ public class UltimateTicTacToe extends Application {
     }
 
     private void clearClickableMiniGridsHighlighting(){
-        for(Node node : clickableMiniGrids){
-            GameUtils.toggleMiniGridHighlighting((GridPane) node, false);
-        }
+        clickableMiniGrids.forEach(node -> GameUtils.toggleMiniGridHighlighting((GridPane) node, false));
     }
 
     private void updateClickableMiniGrids(Button button) {
@@ -346,12 +344,13 @@ public class UltimateTicTacToe extends Application {
     }
 
     private void flashBackgrounds(List<GridPane> winningMiniGrids) {
-        Background background = game.getPlayer1().wonGame ? GameUtils.getPlayer1MiniGridBackground() : GameUtils.getPlayer2MiniGridBackground();
+        Background coloredBackground = game.getPlayer1().wonGame ? GameUtils.getPlayer1MiniGridBackground() : GameUtils.getPlayer2MiniGridBackground();
+        Background transparentBackground = GameUtils.getTransparentMiniGridBackground();
         List<KeyFrame> keyFrameList = new ArrayList<>();
 
         for(GridPane miniGrid : winningMiniGrids){
-            keyFrameList.add(new KeyFrame(Duration.seconds(0.5), e -> miniGrid.setBackground(background)));
-            keyFrameList.add(new KeyFrame(Duration.seconds(1), e -> miniGrid.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, CornerRadii.EMPTY, Insets.EMPTY)))));
+            keyFrameList.add(new KeyFrame(Duration.seconds(0.5), e -> miniGrid.setBackground(coloredBackground)));
+            keyFrameList.add(new KeyFrame(Duration.seconds(1), e -> miniGrid.setBackground(transparentBackground)));
         }
 
         timeline = new Timeline();

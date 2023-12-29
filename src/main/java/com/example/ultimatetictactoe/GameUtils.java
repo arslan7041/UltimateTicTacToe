@@ -1,8 +1,11 @@
 package com.example.ultimatetictactoe;
 
+import javafx.animation.Animation;
+import javafx.animation.FadeTransition;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.control.Label;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.effect.GaussianBlur;
 import javafx.scene.layout.Background;
@@ -10,6 +13,7 @@ import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
+import javafx.util.Duration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +26,8 @@ public class GameUtils {
     private static final DropShadow glowEffect = createGlowEffect();
     private static final Background player1MiniGridBackground = createPlayer1MiniGridBackground();
     private static final Background player2MiniGridBackground = createPlayer2MiniGridBackground();
+    private static final Background transparentMiniGridBackground = createTransparentMiniGridBackground();
+
     private static List<GridPane> winningMiniGrids = null;
 
     private static DropShadow createGlowEffect() {
@@ -43,6 +49,12 @@ public class GameUtils {
                 Insets.EMPTY));
     }
 
+    private static Background createTransparentMiniGridBackground(){
+        return new Background(new BackgroundFill(Color.TRANSPARENT,
+                CornerRadii.EMPTY,
+                Insets.EMPTY));
+    }
+
     public static Background getPlayer1MiniGridBackground(){
         return player1MiniGridBackground;
     }
@@ -51,15 +63,27 @@ public class GameUtils {
         return player2MiniGridBackground;
     }
 
-    public static void toggleMiniGridHighlighting(GridPane miniGrid, boolean flag){
-        DropShadow glow = flag ? glowEffect : null;
-        miniGrid.getChildren().forEach(child -> child.setEffect(glow));
+    public static Background getTransparentMiniGridBackground(){
+        return transparentMiniGridBackground;
     }
 
     public static GaussianBlur getBlurEffect(){
         GaussianBlur blur = new GaussianBlur();
         blur.setRadius(5);
         return blur;
+    }
+
+    public static FadeTransition getFadeTransition(Label label){
+        FadeTransition fadeTransition = new FadeTransition(Duration.seconds(0.75), label);
+        fadeTransition.setFromValue(1.0);
+        fadeTransition.setToValue(0.0);
+        fadeTransition.setCycleCount(Animation.INDEFINITE);
+        return fadeTransition;
+    }
+
+    public static void toggleMiniGridHighlighting(GridPane miniGrid, boolean flag){
+        DropShadow glow = flag ? glowEffect : null;
+        miniGrid.getChildren().forEach(child -> child.setEffect(glow));
     }
 
     public static void revertStateOfMiniGrid(GridPane miniGrid){
