@@ -14,7 +14,7 @@ import javafx.scene.paint.Color;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.example.ultimatetictactoe.Constants.MINIGRID_BORDER_WIDTH;
+import static com.example.ultimatetictactoe.Constants.MINIGRID_BLACK_BORDER_WIDTH;
 
 public class GameUtils {
 
@@ -54,7 +54,7 @@ public class GameUtils {
         miniGrid.setDisable(false);
         miniGrid.setEffect(null);
         miniGrid.setBackground(null);
-        miniGrid.setStyle(String.format("-fx-border-color: black; -fx-border-width: %d;", MINIGRID_BORDER_WIDTH));
+        miniGrid.setStyle(String.format("-fx-border-color: black; -fx-border-width: %d;", MINIGRID_BLACK_BORDER_WIDTH));
     }
 
     public static GridPane findParentGridPane(Node node) {
