@@ -96,13 +96,11 @@ public class UltimateTicTacToe extends Application {
         GridPane lastMiniGrid = lastMove.getMiniGrid();
         Set<Node> lastClickableMiniGrids = lastMove.getClickableMiniGrids();
 
-        for(Node node : clickableMiniGrids){
-            toggleHighlightingOfMiniGrid((GridPane) node, null);
-        }
+        clearClickableMiniGridsHighlighting();
         clickableMiniGrids = lastClickableMiniGrids;
         if(clickableMiniGrids.size() < 9){
             for(Node node : clickableMiniGrids){
-                toggleHighlightingOfMiniGrid((GridPane) node, GameUtils.getGlowEffect());
+                toggleMiniGridHighlighting((GridPane) node, GameUtils.getGlowEffect());
             }
         }
 
@@ -326,7 +324,7 @@ public class UltimateTicTacToe extends Application {
 
     private void clearClickableMiniGridsHighlighting(){
         for(Node node : clickableMiniGrids){
-            toggleHighlightingOfMiniGrid((GridPane) node, null);
+            toggleMiniGridHighlighting((GridPane) node, null);
         }
     }
 
@@ -336,19 +334,19 @@ public class UltimateTicTacToe extends Application {
         GridPane nextMiniGrid = (GridPane)getNodeGivenIndices(buttonX, buttonY);
 
         if(!nextMiniGrid.isDisabled()){
-            toggleHighlightingOfMiniGrid(nextMiniGrid, GameUtils.getGlowEffect());
+            toggleMiniGridHighlighting(nextMiniGrid, GameUtils.getGlowEffect());
             clickableMiniGrids.add(nextMiniGrid);
         }else{
             for(Node node : mainGrid.getChildren()){
                 if(!node.isDisabled()){
-                    toggleHighlightingOfMiniGrid((GridPane) node, GameUtils.getGlowEffect());
+                    toggleMiniGridHighlighting((GridPane) node, GameUtils.getGlowEffect());
                     clickableMiniGrids.add(node);
                 }
             }
         }
     }
 
-    private void toggleHighlightingOfMiniGrid(GridPane miniGrid, DropShadow glow){
+    private void toggleMiniGridHighlighting(GridPane miniGrid, DropShadow glow){
         for(Node node : miniGrid.getChildren()){
             node.setEffect(glow);
         }
