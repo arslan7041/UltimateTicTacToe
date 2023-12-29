@@ -14,6 +14,7 @@ import javafx.scene.paint.Color;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.example.ultimatetictactoe.Constants.GLOW_SPREAD;
 import static com.example.ultimatetictactoe.Constants.MINIGRID_BLACK_BORDER_WIDTH;
 
 public class GameUtils {
@@ -24,12 +25,15 @@ public class GameUtils {
     private static DropShadow createGlowEffect() {
         DropShadow glow = new DropShadow();
         glow.setColor(Color.YELLOW);
-        glow.setSpread(0.8); // Set the width of the glow
+        glow.setSpread(GLOW_SPREAD); // Set the width of the glow
         return glow;
     }
 
-    public static DropShadow getGlowEffect() {
-        return glowEffect;
+    public static void toggleMiniGridHighlighting(GridPane miniGrid, boolean flag){
+        DropShadow glow = flag ? glowEffect : null;
+        for(Node node : miniGrid.getChildren()){
+            node.setEffect(glow);
+        }
     }
 
     public static Background getPlayer1MiniGridBackground(){

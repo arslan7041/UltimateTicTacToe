@@ -25,4 +25,5 @@ public class Constants {
     public static final double UNDO_BUTTON_FONT_SIZE = 2;
     public static final int UNDO_BUTTON_BORDER_WIDTH = 4;
 
+    public static final double GLOW_SPREAD = 0.8;
 }

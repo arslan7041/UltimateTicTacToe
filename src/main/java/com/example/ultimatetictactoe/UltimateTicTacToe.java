@@ -10,7 +10,6 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -100,7 +99,7 @@ public class UltimateTicTacToe extends Application {
         clickableMiniGrids = lastClickableMiniGrids;
         if(clickableMiniGrids.size() < 9){
             for(Node node : clickableMiniGrids){
-                toggleMiniGridHighlighting((GridPane) node, GameUtils.getGlowEffect());
+                GameUtils.toggleMiniGridHighlighting((GridPane) node, true);
             }
         }
 
@@ -324,7 +323,7 @@ public class UltimateTicTacToe extends Application {
 
     private void clearClickableMiniGridsHighlighting(){
         for(Node node : clickableMiniGrids){
-            toggleMiniGridHighlighting((GridPane) node, null);
+            GameUtils.toggleMiniGridHighlighting((GridPane) node, false);
         }
     }
 
@@ -334,21 +333,15 @@ public class UltimateTicTacToe extends Application {
         GridPane nextMiniGrid = (GridPane)getNodeGivenIndices(buttonX, buttonY);
 
         if(!nextMiniGrid.isDisabled()){
-            toggleMiniGridHighlighting(nextMiniGrid, GameUtils.getGlowEffect());
+            GameUtils.toggleMiniGridHighlighting(nextMiniGrid, true);
             clickableMiniGrids.add(nextMiniGrid);
         }else{
             for(Node node : mainGrid.getChildren()){
                 if(!node.isDisabled()){
-                    toggleMiniGridHighlighting((GridPane) node, GameUtils.getGlowEffect());
+                    GameUtils.toggleMiniGridHighlighting((GridPane) node, true);
                     clickableMiniGrids.add(node);
                 }
             }
-        }
-    }
-
-    private void toggleMiniGridHighlighting(GridPane miniGrid, DropShadow glow){
-        for(Node node : miniGrid.getChildren()){
-            node.setEffect(glow);
         }
     }
 
