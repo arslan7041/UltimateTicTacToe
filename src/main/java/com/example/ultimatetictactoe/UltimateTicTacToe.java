@@ -1,30 +1,39 @@
 package com.example.ultimatetictactoe;
 
+import javafx.animation.Animation;
+import javafx.animation.FadeTransition;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.effect.DropShadow;
-import javafx.scene.effect.GaussianBlur;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static com.example.ultimatetictactoe.Constants.*;
 
-public class UltimateTicTacToeUI extends Application {
+public class UltimateTicTacToe extends Application {
 
-    private UltimateTicTaceToeGame game;
+    private UltimateTicTacToeBackEndGame game;
     private GridPane mainGrid;
     private Set<Node> clickableMiniGrids;
     private Label turnLabel;
     private Label resultLabel;
+    private Button player1UndoButton;
+    private Button player2UndoButton;
+    private LastMove lastMove;
+    private Timeline timeline;
 
     public static void main(String[] args) {
         launch(args);
@@ -32,7 +41,7 @@ public class UltimateTicTacToeUI extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        game = new UltimateTicTaceToeGame();
+        game = new UltimateTicTacToeBackEndGame();
         mainGrid = new GridPane();
         initializeGrid();
         clickableMiniGrids = new HashSet<>(mainGrid.getChildren());
@@ -44,14 +53,30 @@ public class UltimateTicTacToeUI extends Application {
         initializeTurnLabel();
         initializeResultLabel();
 
+        player1UndoButton = createUndoButton(game.getPlayer1());
+        player2UndoButton = createUndoButton(game.getPlayer2());
+        player1UndoButton.setDisable(true);
+        player2UndoButton.setDisable(true);
+
+        player1UndoButton.setOnAction(e -> handleUndoButtonClick());
+        player2UndoButton.setOnAction(e -> handleUndoButtonClick());
+
+        lastMove = null;
+
+        VBox undoButtonsVerticalBox = new VBox();
+        undoButtonsVerticalBox.getChildren().addAll(player1UndoButton, player2UndoButton);
+        undoButtonsVerticalBox.setSpacing(10);
+        undoButtonsVerticalBox.setPadding(new Insets(50, 0, 0, 0));
+
         Button startNewGameButton = new Button(START_NEW_GAME_BUTTON_TEXT);
         startNewGameButton.setStyle(String.format("-fx-border-color: black; -fx-border-width: %d; -fx-font-weight: bold; -fx-font-size: %fem;",
                 START_NEW_GAME_BUTTON_BORDER_WIDTH, START_NEW_GAME_BUTTON_FONT_SIZE));
         startNewGameButton.setOnAction(e -> handleStartNewGameButtonClick());
 
         VBox verticalBox = new VBox();
-        verticalBox.getChildren().addAll(resultLabel, startNewGameButton);
-        verticalBox.setPadding(new Insets(325, 0, 0, 0)); // padding above to push resultLabel and startNewGameButton down
+        verticalBox.getChildren().addAll(resultLabel, startNewGameButton, undoButtonsVerticalBox);
+        verticalBox.setPadding(new Insets(245, 0, 0, 0)); // padding above to push resultLabel and startNewGameButton down
+        VBox.setMargin(startNewGameButton, new Insets(30, 0, 0, 0));
 
         HBox horizontalBox = new HBox(scrollPane, verticalBox);
 
@@ -63,6 +88,63 @@ public class UltimateTicTacToeUI extends Application {
         primaryStage.setScene(scene);
         primaryStage.setTitle("Ultimate Tic Tac Toe");
         primaryStage.show();
+    }
+
+    private void handleUndoButtonClick() {
+        game.player1Turn = ! game.player1Turn;
+        toggleTurnLabel();
+        Button lastButton = lastMove.getButton();
+        GridPane lastMiniGrid = lastMove.getMiniGrid();
+        Set<Node> lastClickableMiniGrids = lastMove.getClickableMiniGrids();
+
+        for(Node node : clickableMiniGrids){
+            toggleHighlightingOfMiniGrid((GridPane) node, null);
+        }
+
+        clickableMiniGrids = lastClickableMiniGrids;
+
+        if(clickableMiniGrids.size() < 9){
+            for(Node node : clickableMiniGrids){
+                toggleHighlightingOfMiniGrid((GridPane) node, GameUtils.getGlowEffect());
+            }
+        }
+
+        lastButton.setGraphic(null);
+        game.undoMove(lastButton, lastMiniGrid);
+
+        if(lastMiniGrid.isDisabled()){
+            GameUtils.revertStateOfMiniGrid(lastMiniGrid);
+            game.undoMiniGridCompletionAndWin(lastMiniGrid);
+        }
+        if(mainGrid.isDisabled()){
+            mainGrid.setDisable(false);
+            resultLabel.setVisible(false);
+            turnLabel.setVisible(true);
+            if(game.isTie){
+                game.isTie = false;
+            } else if(game.getPlayer1().wonGame){
+                game.getPlayer1().wonGame = false;
+            } else if(game.getPlayer2().wonGame){
+                game.getPlayer2().wonGame = false;
+            }
+        }
+        if(timeline != null){
+            Background background = game.player1Turn ? GameUtils.getPlayer1MiniGridBackground() : GameUtils.getPlayer2MiniGridBackground();
+            List<GridPane> winningMiniGrids = GameUtils.getWinningMiniGrids();
+            for(GridPane winningMiniGrid : winningMiniGrids){
+                if( !winningMiniGrid.equals(lastMiniGrid) ){
+                    winningMiniGrid.setBackground(background);
+                }
+            }
+            timeline.stop();
+            timeline = null;
+        }
+
+        if(game.player1Turn) {
+            player1UndoButton.setDisable(true);
+        } else{
+            player2UndoButton.setDisable(true);
+        }
     }
 
     private void  handleStartNewGameButtonClick() {
@@ -83,10 +165,7 @@ public class UltimateTicTacToeUI extends Application {
                 mainGrid.setDisable(false);
                 for(Node miniGridNode : mainGrid.getChildren()){
                     GridPane miniGrid = (GridPane) miniGridNode;
-                    miniGrid.setDisable(false);
-                    miniGrid.setEffect(null);
-                    miniGrid.setBackground(null);
-                    miniGrid.setStyle(String.format("-fx-border-color: black; -fx-border-width: %d;", MINIGRID_BORDER_WIDTH));
+                    GameUtils.revertStateOfMiniGrid(miniGrid);
                     for(Node buttonNode : miniGrid.getChildren()){
                         Button button = (Button) buttonNode;
                         button.setDisable(false);
@@ -98,6 +177,10 @@ public class UltimateTicTacToeUI extends Application {
                 toggleTurnLabel();
                 turnLabel.setVisible(true);
                 resultLabel.setVisible(false);
+                if(timeline != null){
+                    timeline.stop();
+                    timeline = null;
+                }
             }
         });
     }
@@ -112,6 +195,14 @@ public class UltimateTicTacToeUI extends Application {
         resultLabel = new Label();
         resultLabel.setAlignment(Pos.CENTER);
         resultLabel.setVisible(false);  // Initially set to invisible
+    }
+
+    private Button createUndoButton(Player player){
+        Button undoButton = new Button();
+        undoButton.setText(String.format("Player %s Undo", player.getLabelValue()));
+        undoButton.setStyle(String.format("-fx-text-fill: %s; -fx-font-weight: bold; -fx-font-size: %fem; -fx-border-color: %s; -fx-border-width: %d;",
+                player.getLabelColor(), UNDO_BUTTON_FONT_SIZE, player.getLabelColor(), UNDO_BUTTON_BORDER_WIDTH));
+        return undoButton;
     }
 
     private void initializeGrid() {
@@ -143,7 +234,7 @@ public class UltimateTicTacToeUI extends Application {
     }
 
     private void handleCellButtonClick(Button button) {
-        GridPane miniGrid = findParentGridPane(button);
+        GridPane miniGrid = GameUtils.findParentGridPane(button);
         if (isButtonEmpty(button) && isMiniGridClickable(miniGrid)) {
             Player player = game.player1Turn ? game.getPlayer1() : game.getPlayer2();
             Label buttonLabel = new Label();
@@ -151,18 +242,29 @@ public class UltimateTicTacToeUI extends Application {
             buttonLabel.setStyle(String.format("-fx-text-fill: %s; -fx-font-weight: bold; -fx-font-size: %dem;", player.getLabelColor(), player.getLabelSize()));
             button.setGraphic(buttonLabel);
 
+            lastMove = new LastMove(button, miniGrid, new HashSet<>(clickableMiniGrids)); // record move data in case of undo
+
             backEndGameLogic(button, miniGrid);
             clearClickableMiniGrids(miniGrid);
             boolean gameHasEnded = showResultIfGameEnded();
 
+            game.player1Turn = !game.player1Turn;
             if(!gameHasEnded){
                 updateClickableMiniGrids(button);
-                game.player1Turn = !game.player1Turn;
                 toggleTurnLabel();
             }else{
                 mainGrid.setDisable(true);
                 turnLabel.setVisible(false);
             }
+
+            if(player.getId() == 1){
+                player1UndoButton.setDisable(false);
+                player2UndoButton.setDisable(true);
+            }else{
+                player2UndoButton.setDisable(false);
+                player1UndoButton.setDisable(true);
+            }
+            game.printUltimateTicTacToeGrid();
         }
     }
 
@@ -177,14 +279,6 @@ public class UltimateTicTacToeUI extends Application {
         return button.getGraphic() == null;
     }
 
-    private GridPane findParentGridPane(Node node) {
-        Parent parent = node.getParent();
-        while (parent != null && !(parent instanceof GridPane)) {
-            parent = parent.getParent();
-        }
-        return (GridPane) parent;
-    }
-
     private boolean showResultIfGameEnded(){
         if(game.isTie || game.getPlayer1().wonGame || game.getPlayer2().wonGame){
             if(game.isTie){
@@ -195,7 +289,19 @@ public class UltimateTicTacToeUI extends Application {
                 resultLabel.setText(String.format("PLAYER %s WON!", winner.getLabelValue()));
                 resultLabel.setStyle(String.format("-fx-font-size: %s; -fx-font-weight: bold; -fx-text-fill: %s;", RESULT_LABEL_FONT_SIZE, winner.getLabelColor()));
             }
+
+            List<List<Integer>> winningCoordinates = game.getWinningCoordinates();
+            GameUtils.setWinningMiniGrids(mainGrid, winningCoordinates);
+            List<GridPane> winningMiniGrids = GameUtils.getWinningMiniGrids();
+            blinkBackground(winningMiniGrids);
+
+            FadeTransition fadeTransition = new FadeTransition(Duration.seconds(0.75), resultLabel);
+            fadeTransition.setFromValue(1.0);
+            fadeTransition.setToValue(0.0);
+            fadeTransition.setCycleCount(Animation.INDEFINITE);
+            fadeTransition.play();
             resultLabel.setVisible(true);
+
             return true;
         }
         return false;
@@ -206,20 +312,14 @@ public class UltimateTicTacToeUI extends Application {
         if(game.checkMiniGridForWin(miniGrid)){
             miniGrid.setDisable(true);
             if(game.player1Turn){
-                miniGrid.setBackground(new Background(new BackgroundFill(Color.BLUE,
-                        CornerRadii.EMPTY,
-                        Insets.EMPTY)));
+                miniGrid.setBackground(GameUtils.getPlayer1MiniGridBackground());
                 miniGrid.setStyle("-fx-border-color: darkblue;  -fx-border-width: 4;");
             }else{
-                miniGrid.setBackground(new Background(new BackgroundFill(Color.rgb(255, 127, 127),
-                        CornerRadii.EMPTY,
-                        Insets.EMPTY)));
-                miniGrid.setStyle("-fx-border-color: darkred;  -fx-border-width: 4;");
+                miniGrid.setBackground(GameUtils.getPlayer2MiniGridBackground());
+                miniGrid.setStyle("-fx-border-color: darkred; -fx-border-width: 4;");
             }
         }else if(game.isGridComplete(miniGrid)){
-            GaussianBlur blur = new GaussianBlur();
-            blur.setRadius(5);
-            miniGrid.setEffect(blur);
+            miniGrid.setEffect(GameUtils.getBlurEffect());
             miniGrid.setDisable(true);
         }
         game.checkGameForWin();
@@ -244,17 +344,14 @@ public class UltimateTicTacToeUI extends Application {
         int buttonX = GridPane.getRowIndex(button);
         int buttonY = GridPane.getColumnIndex(button);
         GridPane nextMiniGrid = (GridPane)getNodeGivenIndices(buttonX, buttonY);
-        DropShadow glow = new DropShadow();
-        glow.setColor(Color.YELLOW);
-        glow.setSpread(0.8); // Set the width of the glow
 
         if(!nextMiniGrid.isDisabled()){
-            toggleHighlightingOfMiniGrid(nextMiniGrid, glow);
+            toggleHighlightingOfMiniGrid(nextMiniGrid, GameUtils.getGlowEffect());
             clickableMiniGrids.add(nextMiniGrid);
         }else{
             for(Node node : mainGrid.getChildren()){
                 if(!node.isDisabled()){
-                    toggleHighlightingOfMiniGrid((GridPane) node, glow);
+                    toggleHighlightingOfMiniGrid((GridPane) node, GameUtils.getGlowEffect());
                     clickableMiniGrids.add(node);
                 }
             }
@@ -275,4 +372,20 @@ public class UltimateTicTacToeUI extends Application {
         }
         return null;
     }
+
+    private void blinkBackground(List<GridPane> winningMiniGrids) {
+        Background background = game.player1Turn ? GameUtils.getPlayer1MiniGridBackground() : GameUtils.getPlayer2MiniGridBackground();
+        List<KeyFrame> keyFrameList = new ArrayList<>();
+
+        for(GridPane miniGrid : winningMiniGrids){
+            keyFrameList.add(new KeyFrame(Duration.seconds(0.5), e -> miniGrid.setBackground(background)));
+            keyFrameList.add(new KeyFrame(Duration.seconds(1), e -> miniGrid.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, CornerRadii.EMPTY, Insets.EMPTY)))));
+        }
+
+        timeline = new Timeline();
+        timeline.getKeyFrames().addAll(keyFrameList);
+        timeline.setCycleCount(Timeline.INDEFINITE);
+        timeline.play();
+    }
+
 }

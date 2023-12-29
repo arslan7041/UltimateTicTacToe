@@ -2,11 +2,13 @@ package com.example.ultimatetictactoe;
 
 public class Player {
     private final int id;
-    public int wins = 0;
-    public boolean wonGame = false;
     private final String labelValue;
     private final String labelColor;
     private final int labelSize;
+
+    public int wins = 0;
+    public boolean wonGame = false;
+    public int undos = 1;
 
     public Player(int id, String label, String color, int size) {
         this.id = id;
