@@ -20,6 +20,8 @@ import static com.example.ultimatetictactoe.Constants.MINIGRID_BLACK_BORDER_WIDT
 public class GameUtils {
 
     private static final DropShadow glowEffect = createGlowEffect();
+    private static final Background player1MiniGridBackground = createPlayer1MiniGridBackground();
+    private static final Background player2MiniGridBackground = createPlayer2MiniGridBackground();
     private static List<GridPane> winningMiniGrids = null;
 
     private static DropShadow createGlowEffect() {
@@ -29,23 +31,29 @@ public class GameUtils {
         return glow;
     }
 
-    public static void toggleMiniGridHighlighting(GridPane miniGrid, boolean flag){
-        DropShadow glow = flag ? glowEffect : null;
-        for(Node node : miniGrid.getChildren()){
-            node.setEffect(glow);
-        }
-    }
-
-    public static Background getPlayer1MiniGridBackground(){
+    private static Background createPlayer1MiniGridBackground(){
         return new Background(new BackgroundFill(Color.BLUE,
                 CornerRadii.EMPTY,
                 Insets.EMPTY));
     }
 
-    public static Background getPlayer2MiniGridBackground(){
+    private static Background createPlayer2MiniGridBackground(){
         return new Background(new BackgroundFill(Color.rgb(255, 127, 127),
                 CornerRadii.EMPTY,
                 Insets.EMPTY));
+    }
+
+    public static Background getPlayer1MiniGridBackground(){
+        return player1MiniGridBackground;
+    }
+
+    public static Background getPlayer2MiniGridBackground(){
+        return player2MiniGridBackground;
+    }
+
+    public static void toggleMiniGridHighlighting(GridPane miniGrid, boolean flag){
+        DropShadow glow = flag ? glowEffect : null;
+        miniGrid.getChildren().forEach(child -> child.setEffect(glow));
     }
 
     public static GaussianBlur getBlurEffect(){
