@@ -90,7 +90,7 @@ public class UltimateTicTacToe extends Application {
     }
 
     private void handleUndoButtonClick() {
-        game.player1Turn = ! game.player1Turn;
+        game.player1Turn = !game.player1Turn;
         toggleTurnLabel();
         Button lastButton = lastMove.getButton();
         GridPane lastMiniGrid = lastMove.getMiniGrid();
@@ -245,7 +245,7 @@ public class UltimateTicTacToe extends Application {
             updateMiniGridIfWonOrTie(miniGrid);
             lastMove = new LastMove(button, miniGrid, new HashSet<>(clickableMiniGrids)); // record move data in case of undo
 
-            clearHighlightingOfClickableMiniGrids(miniGrid);
+            clearClickableMiniGridsHighlighting();
             clickableMiniGrids.clear();
 
             boolean hasGameEnded = game.checkGameForWinOrTie();
@@ -324,13 +324,9 @@ public class UltimateTicTacToe extends Application {
         return clickableMiniGrids.contains(miniGrid);
     }
 
-    private void clearHighlightingOfClickableMiniGrids(GridPane currentMiniGrid){
-        if(clickableMiniGrids.size() > 1){
-            for(Node node : clickableMiniGrids){
-                toggleHighlightingOfMiniGrid((GridPane) node, null);
-            }
-        }else{
-            toggleHighlightingOfMiniGrid(currentMiniGrid, null);
+    private void clearClickableMiniGridsHighlighting(){
+        for(Node node : clickableMiniGrids){
+            toggleHighlightingOfMiniGrid((GridPane) node, null);
         }
     }
 
