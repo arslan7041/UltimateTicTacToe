@@ -11,11 +11,15 @@ import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static com.example.ultimatetictactoe.Constants.MINIGRID_BORDER_WIDTH;
 
 public class GameUtils {
 
     private static final DropShadow glowEffect = createGlowEffect();
+    private static List<GridPane> winningMiniGrids = null;
 
     private static DropShadow createGlowEffect() {
         DropShadow glow = new DropShadow();
@@ -59,5 +63,19 @@ public class GameUtils {
             parent = parent.getParent();
         }
         return (GridPane) parent;
+    }
+
+    public static void setWinningMiniGrids(GridPane mainGrid, List<List<Integer>> winningCoordinates){
+        winningMiniGrids = new ArrayList<>();
+        for (List<Integer> coordinates : winningCoordinates) {
+            int row = coordinates.get(0);
+            int col = coordinates.get(1);
+            GridPane miniGrid = (GridPane)mainGrid.getChildren().get(col * 3 + row);
+            winningMiniGrids.add(miniGrid);
+        }
+    }
+
+    public static List<GridPane> getWinningMiniGrids(){
+        return winningMiniGrids;
     }
 }

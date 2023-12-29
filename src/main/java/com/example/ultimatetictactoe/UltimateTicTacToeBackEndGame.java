@@ -3,6 +3,10 @@ package com.example.ultimatetictactoe;
 import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import static com.example.ultimatetictactoe.Constants.*;
 
 public class UltimateTicTacToeBackEndGame {
@@ -149,6 +153,38 @@ public class UltimateTicTacToeBackEndGame {
             player2.wins--;
         }
         miniGridWinsBoard[i][j] = 0;
+    }
+
+    public List<List<Integer>> getWinningCoordinates(){
+        List<List<Integer>> winningCoordinates = new ArrayList<>();
+
+        // check rows and columns
+        for (int i = 0; i < 3; i++) {
+            if (miniGridWinsBoard[i][0] == miniGridWinsBoard[i][1] && miniGridWinsBoard[i][1] == miniGridWinsBoard[i][2] && miniGridWinsBoard[i][0] != 0 && miniGridWinsBoard[i][0] != -1) {
+                winningCoordinates.add(Arrays.asList(i, 0));
+                winningCoordinates.add(Arrays.asList(i, 1));
+                winningCoordinates.add(Arrays.asList(i, 2));
+            }
+            if (miniGridWinsBoard[0][i] == miniGridWinsBoard[1][i] && miniGridWinsBoard[1][i] == miniGridWinsBoard[2][i] && miniGridWinsBoard[0][i] != 0 && miniGridWinsBoard[0][i] != -1) {
+                winningCoordinates.add(Arrays.asList(0, i));
+                winningCoordinates.add(Arrays.asList(1, i));
+                winningCoordinates.add(Arrays.asList(2, i));
+            }
+        }
+
+        // check diagonals
+        if(miniGridWinsBoard[0][0] == miniGridWinsBoard[1][1] && miniGridWinsBoard[1][1] == miniGridWinsBoard[2][2] && miniGridWinsBoard[0][0] != 0 && miniGridWinsBoard[0][0] != -1){
+            winningCoordinates.add(Arrays.asList(0, 0));
+            winningCoordinates.add(Arrays.asList(1, 1));
+            winningCoordinates.add(Arrays.asList(2, 2));
+        }
+        if(miniGridWinsBoard[0][2] == miniGridWinsBoard[1][1] && miniGridWinsBoard[1][1] == miniGridWinsBoard[2][0] && miniGridWinsBoard[0][2] != 0 && miniGridWinsBoard[0][2] != -1){
+            winningCoordinates.add(Arrays.asList(0, 2));
+            winningCoordinates.add(Arrays.asList(1, 1));
+            winningCoordinates.add(Arrays.asList(2, 0));
+        }
+
+        return winningCoordinates;
     }
 
     public Player getPlayer1() {
