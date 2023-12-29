@@ -3,7 +3,8 @@ package com.example.ultimatetictactoe;
 public class Constants {
     public static final int SCROLLPANE_WIDTH = 1200;
     public static final int SCROLLPANE_HEIGHT = 800;
-    public static final int MINIGRID_BORDER_WIDTH = 3;
+    public static final int MINIGRID_BLACK_BORDER_WIDTH = 3;
+    public static final int MINIGRID_COLOR_BORDER_WIDTH = 4;
     public static final int CELL_BUTTON_SIZE = 80;
 
     public static final String PLAYER1_LABEL_COLOR = "darkblue";
@@ -24,4 +25,5 @@ public class Constants {
     public static final double UNDO_BUTTON_FONT_SIZE = 2;
     public static final int UNDO_BUTTON_BORDER_WIDTH = 4;
 
+    public static final double GLOW_SPREAD = 0.8;
 }
