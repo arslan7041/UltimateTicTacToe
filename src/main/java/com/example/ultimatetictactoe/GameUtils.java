@@ -2,17 +2,17 @@ package com.example.ultimatetictactoe;
 
 import javafx.animation.Animation;
 import javafx.animation.FadeTransition;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Label;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.effect.GaussianBlur;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.CornerRadii;
-import javafx.scene.layout.GridPane;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
 import javafx.util.Duration;
 
 import java.util.ArrayList;
@@ -118,4 +118,56 @@ public class GameUtils {
     public static List<GridPane> getWinningMiniGrids(){
         return winningMiniGrids;
     }
+
+    public static void showWinningLine(GridPane gridPane, int row1, int col1, int row2, int col2) {
+//        GridPane overlayGridPane = createOverlayGridPane(gridPane);
+
+        Line line = new Line();
+        line.setStroke(Color.RED);
+        line.setStrokeWidth(5);
+
+        // Calculate the coordinates for the line based on the buttons in the grid
+        double startX = computeXCoordinate(gridPane, col1);
+        double startY = computeYCoordinate(gridPane, row1);
+        double endX = computeXCoordinate(gridPane, col2);
+        double endY = computeYCoordinate(gridPane, row2);
+
+        line.setStartX(startX);
+        line.setStartY(startY);
+        line.setEndX(endX);
+//        line.setEndY(endY);
+//
+//        overlayGridPane.setMouseTransparent(true);
+//
+//        overlayGridPane.getChildren().add(line);
+    }
+
+    private static double computeXCoordinate(GridPane gridPane, int col) {
+        double cellWidth = gridPane.getWidth() / 3;
+        return gridPane.getLayoutX() + cellWidth * (col + 0.5);
+    }
+
+    private static double computeYCoordinate(GridPane gridPane, int row) {
+        double cellHeight = gridPane.getHeight() / 3;
+        return gridPane.getLayoutY() + cellHeight * (row + 0.5);
+    }
+
+    public static Canvas createOverlayCanvas(GridPane baseGridPane) {
+        Canvas overlayCanvas = new Canvas();
+
+        // Set canvas background to be transparent
+        overlayCanvas.setStyle("-fx-background-color: transparent;");
+        overlayCanvas.setMouseTransparent(true);
+
+//        // Use Platform.runLater to ensure accurate dimensions and position
+        Platform.runLater(() -> {
+            overlayCanvas.setWidth(baseGridPane.getBoundsInLocal().getWidth());
+            overlayCanvas.setHeight(baseGridPane.getBoundsInLocal().getHeight());
+            overlayCanvas.setLayoutX(baseGridPane.getLayoutX());
+            overlayCanvas.setLayoutY(baseGridPane.getLayoutY());
+        });
+
+        return overlayCanvas;
+    }
+
 }

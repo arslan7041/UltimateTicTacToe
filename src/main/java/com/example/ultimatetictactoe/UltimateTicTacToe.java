@@ -8,11 +8,15 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
@@ -27,6 +31,7 @@ public class UltimateTicTacToe extends Application {
 
     private UltimateTicTacToeBackEndGame game;
     private GridPane mainGrid;
+    private Canvas overlayCanvas;
     private Set<Node> clickableMiniGrids;
     private Label turnLabel;
     private Label resultLabel;
@@ -45,9 +50,10 @@ public class UltimateTicTacToe extends Application {
         initializeGrid();
         clickableMiniGrids = new HashSet<>(mainGrid.getChildren());
 
-        ScrollPane scrollPane = new ScrollPane(mainGrid);
-        scrollPane.setStyle("-fx-background-color:transparent;");
-        scrollPane.setPadding(new Insets(0, 50, 0, 0)); // padding to the right of grid
+        overlayCanvas = GameUtils.createOverlayCanvas(mainGrid);
+        StackPane stackPane = new StackPane(mainGrid, overlayCanvas);
+        stackPane.setStyle("-fx-background-color:transparent;");
+        stackPane.setPadding(new Insets(0, 50, 0, 0)); // padding to the right of grid
 
         initializeTurnLabel();
         initializeResultLabel();
@@ -76,7 +82,7 @@ public class UltimateTicTacToe extends Application {
         verticalBox.setPadding(new Insets(245, 0, 0, 0)); // padding above to push resultLabel and startNewGameButton down
         VBox.setMargin(startNewGameButton, new Insets(30, 0, 0, 0));
 
-        HBox horizontalBox = new HBox(scrollPane, verticalBox);
+        HBox horizontalBox = new HBox(stackPane, verticalBox);
 
         VBox rootVerticalBox = new VBox(turnLabel, horizontalBox);
         rootVerticalBox.setPadding(new Insets(0, 0, 0, 50)); // pad left of root
@@ -204,11 +210,13 @@ public class UltimateTicTacToe extends Application {
     private void initializeGrid() {
         mainGrid = new GridPane();
         for (int i = 0; i < 3; i++) {
+            GridPane miniGrid = null;
             for (int j = 0; j < 3; j++) {
-                GridPane miniGrid = createMiniGrid();
+                miniGrid = createMiniGrid();
                 mainGrid.add(miniGrid, i, j);
             }
         }
+
     }
 
     private GridPane createMiniGrid() {
@@ -223,6 +231,76 @@ public class UltimateTicTacToe extends Application {
         return miniGrid;
     }
 
+    private Line createInvisibleLine() {
+        Line line = new Line();
+        line.setStrokeWidth(5);  // Set the stroke width as needed
+        line.setVisible(false);  // Initially set the line as invisible
+        return line;
+    }
+
+    private void updateLines(GridPane miniGrid, int startRow, int endRow, int startCol, int endCol) {
+
+        Line horizontalLine = createInvisibleLine();
+
+        // Update the lines based on the winning condition
+        double cellSize = CELL_BUTTON_SIZE;
+
+        // Get the row and column index of the miniGrid
+        Integer rowIndex = GridPane.getRowIndex(miniGrid);
+        Integer colIndex = GridPane.getColumnIndex(miniGrid);
+
+        if (rowIndex == null || colIndex == null) {
+            // Handle the case where the miniGrid is not in a specific row or column
+            return;
+        }
+
+        GraphicsContext gc = overlayCanvas.getGraphicsContext2D();
+        gc.setStroke(Color.RED); // Set line color
+        gc.setLineWidth(5); // Set line width
+
+        System.out.println("OverlayCanvas dimensions: " + overlayCanvas.getWidth() + " x " + overlayCanvas.getHeight());
+        System.out.println("mainGrid dimensions: " + mainGrid.getWidth() + " x " + mainGrid.getHeight());
+
+        System.out.println("OverlayCanvas layout: " + overlayCanvas.getLayoutX() + " x " + overlayCanvas.getLayoutY());
+        System.out.println("mainGrid dimensions: " + mainGrid.getLayoutX() + " x " + mainGrid.getLayoutY());
+
+        // Draw the line
+        gc.strokeLine(
+                miniGrid.getLayoutX() + cellSize * 0.20,
+                miniGrid.getLayoutY() + cellSize / 2,
+                miniGrid.getLayoutX() + 2.8 * cellSize,
+                miniGrid.getLayoutY() + cellSize / 2);
+
+        // Horizontal line
+//        horizontalLine.setStartX(miniGrid.getLayoutX() + cellSize / 2);
+//        horizontalLine.setStartY(miniGrid.getLayoutY() + cellSize / 2);
+//        horizontalLine.setEndX(miniGrid.getLayoutX() + 3 * cellSize);
+//        horizontalLine.setEndY(miniGrid.getLayoutX() + cellSize / 2);
+//        horizontalLine.setVisible(true);
+
+                // Vertical line
+//        verticalLine.setStartX((col + 0.5) * cellSize);
+//        verticalLine.setStartY(0);
+//        verticalLine.setEndX((col + 0.5) * cellSize);
+//        verticalLine.setEndY(3 * cellSize);
+////        verticalLine.setVisible(true);
+//
+//        //        // Diagonal lines
+//        diagonalLine1.setStartX(0);
+//        diagonalLine1.setStartY(0);
+//        diagonalLine1.setEndX(3 * cellSize);
+//        diagonalLine1.setEndY(3 * cellSize);
+////        diagonalLine1.setVisible(true);
+//
+//        diagonalLine2.setStartX(0);
+//        diagonalLine2.setStartY(3 * cellSize);
+//        diagonalLine2.setEndX(3 * cellSize);
+//        diagonalLine2.setEndY(0);
+//        diagonalLine2.setVisible(true);
+
+    }
+
+
     private Button createCellButton() {
         Button button = new Button();
         button.setMinSize(CELL_BUTTON_SIZE, CELL_BUTTON_SIZE);
@@ -232,6 +310,7 @@ public class UltimateTicTacToe extends Application {
 
     private void handleCellButtonClick(Button button) {
         GridPane miniGrid = GameUtils.findParentGridPane(button);
+//        GameUtils.showWinningLine(miniGrid, 0, 0, 0, 2);
         if (isButtonEmpty(button) && isMiniGridClickable(miniGrid)) {
             Player player = game.player1Turn ? game.getPlayer1() : game.getPlayer2();
             Label buttonLabel = new Label();
@@ -304,9 +383,12 @@ public class UltimateTicTacToe extends Application {
     private void updateMiniGridIfWonOrTie(GridPane miniGrid){
         if(game.checkMiniGridForWin(miniGrid)){
             if(game.player1Turn){
+                updateLines(miniGrid, 0, 0, 0, 2);
                 miniGrid.setBackground(GameUtils.getPlayer1MiniGridBackground());
                 miniGrid.setStyle(String.format("-fx-border-color: %s;  -fx-border-width: %d;", PLAYER1_LABEL_COLOR, MINIGRID_COLOR_BORDER_WIDTH));
             }else{
+                updateLines(miniGrid, 0, 0, 0, 2);
+//                GameUtils.showWinningLine(miniGrid, 0, 0, 0, 2);
                 miniGrid.setBackground(GameUtils.getPlayer2MiniGridBackground());
                 miniGrid.setStyle(String.format("-fx-border-color: %s; -fx-border-width: %d;", PLAYER2_LABEL_COLOR, MINIGRID_COLOR_BORDER_WIDTH));
             }
