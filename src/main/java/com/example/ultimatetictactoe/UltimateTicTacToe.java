@@ -16,7 +16,6 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Line;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
@@ -32,6 +31,7 @@ public class UltimateTicTacToe extends Application {
     private UltimateTicTacToeBackEndGame game;
     private GridPane mainGrid;
     private Canvas overlayCanvas;
+    private GraphicsContext graphicsContext;
     private Set<Node> clickableMiniGrids;
     private Label turnLabel;
     private Label resultLabel;
@@ -51,6 +51,7 @@ public class UltimateTicTacToe extends Application {
         clickableMiniGrids = new HashSet<>(mainGrid.getChildren());
 
         overlayCanvas = GameUtils.createOverlayCanvas(mainGrid);
+        graphicsContext = overlayCanvas.getGraphicsContext2D();
         StackPane stackPane = new StackPane(mainGrid, overlayCanvas);
         stackPane.setStyle("-fx-background-color:transparent;");
         stackPane.setPadding(new Insets(0, 50, 0, 0)); // padding to the right of grid
@@ -114,6 +115,10 @@ public class UltimateTicTacToe extends Application {
 
         if(lastMiniGrid.isDisabled()){
             GameUtils.revertStateOfMiniGrid(lastMiniGrid);
+            System.out.println("lastMiniGrid dimensions: " + lastMiniGrid.getLayoutX() + " x " + lastMiniGrid.getLayoutY());
+            System.out.println("lastMiniGrid dimensions: " + lastMiniGrid.getWidth() + " x " + lastMiniGrid.getHeight());
+            graphicsContext.clearRect(lastMiniGrid.getLayoutX(), lastMiniGrid.getLayoutY(), lastMiniGrid.getWidth(), lastMiniGrid.getHeight());
+
             game.undoMiniGridCompletionAndWin(lastMiniGrid);
         }
 
@@ -121,6 +126,7 @@ public class UltimateTicTacToe extends Application {
             mainGrid.setDisable(false);
             resultLabel.setVisible(false);
             turnLabel.setVisible(true);
+
             if(game.isTie){
                 game.isTie = false;
             } else if(game.getPlayer1().wonGame){
@@ -231,73 +237,51 @@ public class UltimateTicTacToe extends Application {
         return miniGrid;
     }
 
-    private Line createInvisibleLine() {
-        Line line = new Line();
-        line.setStrokeWidth(5);  // Set the stroke width as needed
-        line.setVisible(false);  // Initially set the line as invisible
-        return line;
-    }
+    private void updateLines(GridPane miniGrid, int startRow, int startCol, int endRow, int endCol) {
 
-    private void updateLines(GridPane miniGrid, int startRow, int endRow, int startCol, int endCol) {
-
-        Line horizontalLine = createInvisibleLine();
-
-        // Update the lines based on the winning condition
         double cellSize = CELL_BUTTON_SIZE;
 
-        // Get the row and column index of the miniGrid
-        Integer rowIndex = GridPane.getRowIndex(miniGrid);
-        Integer colIndex = GridPane.getColumnIndex(miniGrid);
-
-        if (rowIndex == null || colIndex == null) {
-            // Handle the case where the miniGrid is not in a specific row or column
-            return;
-        }
-
-        GraphicsContext gc = overlayCanvas.getGraphicsContext2D();
-        gc.setStroke(Color.RED); // Set line color
-        gc.setLineWidth(5); // Set line width
-
-        System.out.println("OverlayCanvas dimensions: " + overlayCanvas.getWidth() + " x " + overlayCanvas.getHeight());
-        System.out.println("mainGrid dimensions: " + mainGrid.getWidth() + " x " + mainGrid.getHeight());
+        graphicsContext.setStroke(Color.BLACK); // Set line color
+        graphicsContext.setLineWidth(5); // Set line width
 
         System.out.println("OverlayCanvas layout: " + overlayCanvas.getLayoutX() + " x " + overlayCanvas.getLayoutY());
-        System.out.println("mainGrid dimensions: " + mainGrid.getLayoutX() + " x " + mainGrid.getLayoutY());
+        System.out.println("OverlayCanvas dimensions: " + overlayCanvas.getWidth() + " x " + overlayCanvas.getHeight());
 
-        // Draw the line
-        gc.strokeLine(
-                miniGrid.getLayoutX() + cellSize * 0.20,
-                miniGrid.getLayoutY() + cellSize / 2,
-                miniGrid.getLayoutX() + 2.8 * cellSize,
-                miniGrid.getLayoutY() + cellSize / 2);
+        System.out.println("mainGrid layout: " + mainGrid.getLayoutX() + " x " + mainGrid.getLayoutY());
+        System.out.println("mainGrid dimensions: " + mainGrid.getWidth() + " x " + mainGrid.getHeight());
 
-        // Horizontal line
-//        horizontalLine.setStartX(miniGrid.getLayoutX() + cellSize / 2);
-//        horizontalLine.setStartY(miniGrid.getLayoutY() + cellSize / 2);
-//        horizontalLine.setEndX(miniGrid.getLayoutX() + 3 * cellSize);
-//        horizontalLine.setEndY(miniGrid.getLayoutX() + cellSize / 2);
-//        horizontalLine.setVisible(true);
+        System.out.println("miniGrid layout: " + miniGrid.getLayoutX() + " x " + miniGrid.getLayoutY());
+        System.out.println("miniGrid dimensions: " + miniGrid.getWidth() + " x " + miniGrid.getHeight());
 
-                // Vertical line
-//        verticalLine.setStartX((col + 0.5) * cellSize);
-//        verticalLine.setStartY(0);
-//        verticalLine.setEndX((col + 0.5) * cellSize);
-//        verticalLine.setEndY(3 * cellSize);
-////        verticalLine.setVisible(true);
-//
-//        //        // Diagonal lines
-//        diagonalLine1.setStartX(0);
-//        diagonalLine1.setStartY(0);
-//        diagonalLine1.setEndX(3 * cellSize);
-//        diagonalLine1.setEndY(3 * cellSize);
-////        diagonalLine1.setVisible(true);
-//
-//        diagonalLine2.setStartX(0);
-//        diagonalLine2.setStartY(3 * cellSize);
-//        diagonalLine2.setEndX(3 * cellSize);
-//        diagonalLine2.setEndY(0);
-//        diagonalLine2.setVisible(true);
 
+        if(startRow == endRow){ // horizontal line
+            graphicsContext.strokeLine(
+                    miniGrid.getLayoutX() + (startCol * cellSize) + (cellSize * 0.2),
+                    miniGrid.getLayoutY() + (startRow * cellSize) + (cellSize * 0.5),
+                    miniGrid.getLayoutX() + (endCol * cellSize) + (cellSize * 0.8),
+                    miniGrid.getLayoutY() + (endRow * cellSize) + (cellSize * 0.5) );
+        }else if(startCol == endCol){ // vertical line
+            graphicsContext.strokeLine(
+                    miniGrid.getLayoutX() + (startCol * cellSize) + (cellSize * 0.5),
+                    miniGrid.getLayoutY() + (startRow * cellSize) + (cellSize * 0.2),
+                    miniGrid.getLayoutX() + (endCol * cellSize) + (cellSize * 0.5),
+                    miniGrid.getLayoutY() + (endRow * cellSize) + (cellSize * 0.8) );
+        }else{ // diagonal
+            if(endRow > startRow){ // down diagonal
+                graphicsContext.strokeLine(
+                        miniGrid.getLayoutX() + (startCol * cellSize) + (cellSize * 0.2),
+                        miniGrid.getLayoutY() + (startRow * cellSize) + (cellSize * 0.2),
+                        miniGrid.getLayoutX() + (endCol * cellSize) + (cellSize * 0.8),
+                        miniGrid.getLayoutY() + (endRow * cellSize) + (cellSize * 0.8) );
+            }else{ // up diagonal
+                graphicsContext.strokeLine(
+                        miniGrid.getLayoutX() + (startCol * cellSize) + (cellSize * 0.2),
+                        miniGrid.getLayoutY() + (startRow * cellSize) + (cellSize * 0.8),
+                        miniGrid.getLayoutX() + (endCol * cellSize) + (cellSize * 0.8),
+                        miniGrid.getLayoutY() + (endRow * cellSize) + (cellSize * 0.2) );
+            }
+
+        }
     }
 
 
@@ -383,11 +367,11 @@ public class UltimateTicTacToe extends Application {
     private void updateMiniGridIfWonOrTie(GridPane miniGrid){
         if(game.checkMiniGridForWin(miniGrid)){
             if(game.player1Turn){
-                updateLines(miniGrid, 0, 0, 0, 2);
+                updateLines(miniGrid, 0, 0, 2, 2);
                 miniGrid.setBackground(GameUtils.getPlayer1MiniGridBackground());
                 miniGrid.setStyle(String.format("-fx-border-color: %s;  -fx-border-width: %d;", PLAYER1_LABEL_COLOR, MINIGRID_COLOR_BORDER_WIDTH));
             }else{
-                updateLines(miniGrid, 0, 0, 0, 2);
+                updateLines(miniGrid, 2, 0, 0, 2);
 //                GameUtils.showWinningLine(miniGrid, 0, 0, 0, 2);
                 miniGrid.setBackground(GameUtils.getPlayer2MiniGridBackground());
                 miniGrid.setStyle(String.format("-fx-border-color: %s; -fx-border-width: %d;", PLAYER2_LABEL_COLOR, MINIGRID_COLOR_BORDER_WIDTH));
