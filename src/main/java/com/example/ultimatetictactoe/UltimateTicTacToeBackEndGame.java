@@ -13,13 +13,17 @@ public class UltimateTicTacToeBackEndGame {
     private final Player player1;
     private final Player player2;
     public boolean player1Turn = true;
+    public boolean isTie = false;
+
     private int[][][][] grid;
     private int[][] miniGridWinsBoard;
-    public boolean isTie = false;
+    private List<List<Integer>> winningCoordinates;
+
 
     public UltimateTicTacToeBackEndGame() {
         grid = new int[3][3][3][3];
         miniGridWinsBoard = new int[3][3];
+        winningCoordinates =  new ArrayList<>();
         player1 = new Player(1, PLAYER1_LABEL, PLAYER1_LABEL_COLOR, PLAYER1_LABEL_SIZE);
         player2 = new Player(2, PLAYER2_LABEL, PLAYER2_LABEL_COLOR, PLAYER2_LABEL_SIZE);
     }
@@ -27,6 +31,7 @@ public class UltimateTicTacToeBackEndGame {
     public void resetBackEndGame(){
         grid = new int[3][3][3][3];
         miniGridWinsBoard = new int[3][3];
+        winningCoordinates = new ArrayList<>();
         isTie = false;
         player1.resetPlayer();
         player2.resetPlayer();
@@ -47,6 +52,7 @@ public class UltimateTicTacToeBackEndGame {
         int j = GridPane.getColumnIndex(miniGrid);
 
         int[][] miniGridArr = grid[i][j];
+        winningCoordinates.clear();
         if (checkGridRows(miniGridArr) || checkGridColumns(miniGridArr) || checkGridDiagonals(miniGridArr)) {
             if (player1Turn) {
                 player1.wins++;
@@ -61,6 +67,7 @@ public class UltimateTicTacToeBackEndGame {
     }
 
     public boolean checkGameForWinOrTie(){
+        winningCoordinates.clear();
         if (checkGridRows(miniGridWinsBoard) || checkGridColumns(miniGridWinsBoard) || checkGridDiagonals(miniGridWinsBoard)) {
             if (player1Turn) {
                 player1.wonGame = true;
@@ -104,6 +111,9 @@ public class UltimateTicTacToeBackEndGame {
     private boolean checkGridRows(int[][] grid) {
         for (int i = 0; i < 3; i++) {
             if (grid[i][0] == grid[i][1] && grid[i][1] == grid[i][2] && grid[i][0] != 0 && grid[i][0] != -1) {
+                winningCoordinates.add(Arrays.asList(i, 0));
+                winningCoordinates.add(Arrays.asList(i, 1));
+                winningCoordinates.add(Arrays.asList(i, 2));
                 return true;
             }
         }
@@ -113,6 +123,9 @@ public class UltimateTicTacToeBackEndGame {
     private boolean checkGridColumns(int[][] grid) {
         for (int i = 0; i < 3; i++) {
             if (grid[0][i] == grid[1][i] && grid[1][i] == grid[2][i] && grid[0][i] != 0 && grid[0][i] != -1) {
+                winningCoordinates.add(Arrays.asList(0, i));
+                winningCoordinates.add(Arrays.asList(1, i));
+                winningCoordinates.add(Arrays.asList(2, i));
                 return true;
             }
         }
@@ -120,8 +133,20 @@ public class UltimateTicTacToeBackEndGame {
     }
 
     private boolean checkGridDiagonals(int[][] grid) {
-        return (grid[0][0] == grid[1][1] && grid[1][1] == grid[2][2] && grid[0][0] != 0 && grid[0][0] != -1) ||
-                (grid[0][2] == grid[1][1] && grid[1][1] == grid[2][0] && grid[0][2] != 0 && grid[0][2] != -1);
+        boolean diagonalFound = false;
+        if (grid[0][0] == grid[1][1] && grid[1][1] == grid[2][2] && grid[0][0] != 0 && grid[0][0] != -1){
+            winningCoordinates.add(Arrays.asList(0, 0));
+            winningCoordinates.add(Arrays.asList(1, 1));
+            winningCoordinates.add(Arrays.asList(2, 2));
+            diagonalFound = true;
+        }
+        if (grid[0][2] == grid[1][1] && grid[1][1] == grid[2][0] && grid[0][2] != 0 && grid[0][2] != -1){
+            winningCoordinates.add(Arrays.asList(2, 0));
+            winningCoordinates.add(Arrays.asList(1, 1));
+            winningCoordinates.add(Arrays.asList(0, 2));
+            diagonalFound = true;
+        }
+        return diagonalFound;
     }
 
     public void undoMove(Button button, GridPane miniGrid){
@@ -145,37 +170,37 @@ public class UltimateTicTacToeBackEndGame {
         miniGridWinsBoard[i][j] = 0;
     }
 
-    public List<List<Integer>> getWinningCoordinates(){
-        List<List<Integer>> winningCoordinates = new ArrayList<>();
-
-        // check rows and columns
-        for (int i = 0; i < 3; i++) {
-            if (miniGridWinsBoard[i][0] == miniGridWinsBoard[i][1] && miniGridWinsBoard[i][1] == miniGridWinsBoard[i][2] && miniGridWinsBoard[i][0] != 0 && miniGridWinsBoard[i][0] != -1) {
-                winningCoordinates.add(Arrays.asList(i, 0));
-                winningCoordinates.add(Arrays.asList(i, 1));
-                winningCoordinates.add(Arrays.asList(i, 2));
-            }
-            if (miniGridWinsBoard[0][i] == miniGridWinsBoard[1][i] && miniGridWinsBoard[1][i] == miniGridWinsBoard[2][i] && miniGridWinsBoard[0][i] != 0 && miniGridWinsBoard[0][i] != -1) {
-                winningCoordinates.add(Arrays.asList(0, i));
-                winningCoordinates.add(Arrays.asList(1, i));
-                winningCoordinates.add(Arrays.asList(2, i));
-            }
-        }
-
-        // check diagonals
-        if(miniGridWinsBoard[0][0] == miniGridWinsBoard[1][1] && miniGridWinsBoard[1][1] == miniGridWinsBoard[2][2] && miniGridWinsBoard[0][0] != 0 && miniGridWinsBoard[0][0] != -1){
-            winningCoordinates.add(Arrays.asList(0, 0));
-            winningCoordinates.add(Arrays.asList(1, 1));
-            winningCoordinates.add(Arrays.asList(2, 2));
-        }
-        if(miniGridWinsBoard[0][2] == miniGridWinsBoard[1][1] && miniGridWinsBoard[1][1] == miniGridWinsBoard[2][0] && miniGridWinsBoard[0][2] != 0 && miniGridWinsBoard[0][2] != -1){
-            winningCoordinates.add(Arrays.asList(0, 2));
-            winningCoordinates.add(Arrays.asList(1, 1));
-            winningCoordinates.add(Arrays.asList(2, 0));
-        }
-
-        return winningCoordinates;
-    }
+//    public List<List<Integer>> getWinningCoordinates(){
+//        List<List<Integer>> winningCoordinates = new ArrayList<>();
+//
+//        // check rows and columns
+//        for (int i = 0; i < 3; i++) {
+//            if (miniGridWinsBoard[i][0] == miniGridWinsBoard[i][1] && miniGridWinsBoard[i][1] == miniGridWinsBoard[i][2] && miniGridWinsBoard[i][0] != 0 && miniGridWinsBoard[i][0] != -1) {
+//                winningCoordinates.add(Arrays.asList(i, 0));
+//                winningCoordinates.add(Arrays.asList(i, 1));
+//                winningCoordinates.add(Arrays.asList(i, 2));
+//            }
+//            if (miniGridWinsBoard[0][i] == miniGridWinsBoard[1][i] && miniGridWinsBoard[1][i] == miniGridWinsBoard[2][i] && miniGridWinsBoard[0][i] != 0 && miniGridWinsBoard[0][i] != -1) {
+//                winningCoordinates.add(Arrays.asList(0, i));
+//                winningCoordinates.add(Arrays.asList(1, i));
+//                winningCoordinates.add(Arrays.asList(2, i));
+//            }
+//        }
+//
+//        // check diagonals
+//        if(miniGridWinsBoard[0][0] == miniGridWinsBoard[1][1] && miniGridWinsBoard[1][1] == miniGridWinsBoard[2][2] && miniGridWinsBoard[0][0] != 0 && miniGridWinsBoard[0][0] != -1){
+//            winningCoordinates.add(Arrays.asList(0, 0));
+//            winningCoordinates.add(Arrays.asList(1, 1));
+//            winningCoordinates.add(Arrays.asList(2, 2));
+//        }
+//        if(miniGridWinsBoard[0][2] == miniGridWinsBoard[1][1] && miniGridWinsBoard[1][1] == miniGridWinsBoard[2][0] && miniGridWinsBoard[0][2] != 0 && miniGridWinsBoard[0][2] != -1){
+//            winningCoordinates.add(Arrays.asList(0, 2));
+//            winningCoordinates.add(Arrays.asList(1, 1));
+//            winningCoordinates.add(Arrays.asList(2, 0));
+//        }
+//
+//        return winningCoordinates;
+//    }
 
     public Player getPlayer1() {
         return player1;
@@ -183,6 +208,10 @@ public class UltimateTicTacToeBackEndGame {
 
     public Player getPlayer2() {
         return player2;
+    }
+
+    public List<List<Integer>> getWinningCoordinates(){
+        return winningCoordinates;
     }
 
     public void printUltimateTicTacToeGrid() {

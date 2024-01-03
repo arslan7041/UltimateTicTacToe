@@ -237,22 +237,28 @@ public class UltimateTicTacToe extends Application {
         return miniGrid;
     }
 
-    private void updateLines(GridPane miniGrid, int startRow, int startCol, int endRow, int endCol) {
-
+    private void updateLines(GridPane miniGrid, List<List<Integer>> winningCoordinates) {
+        if(winningCoordinates.isEmpty()){
+            return;
+        }
         double cellSize = CELL_BUTTON_SIZE;
 
         graphicsContext.setStroke(Color.BLACK); // Set line color
         graphicsContext.setLineWidth(5); // Set line width
 
-        System.out.println("OverlayCanvas layout: " + overlayCanvas.getLayoutX() + " x " + overlayCanvas.getLayoutY());
-        System.out.println("OverlayCanvas dimensions: " + overlayCanvas.getWidth() + " x " + overlayCanvas.getHeight());
+//        System.out.println("OverlayCanvas layout: " + overlayCanvas.getLayoutX() + " x " + overlayCanvas.getLayoutY());
+//        System.out.println("OverlayCanvas dimensions: " + overlayCanvas.getWidth() + " x " + overlayCanvas.getHeight());
+//
+//        System.out.println("mainGrid layout: " + mainGrid.getLayoutX() + " x " + mainGrid.getLayoutY());
+//        System.out.println("mainGrid dimensions: " + mainGrid.getWidth() + " x " + mainGrid.getHeight());
+//
+//        System.out.println("miniGrid layout: " + miniGrid.getLayoutX() + " x " + miniGrid.getLayoutY());
+//        System.out.println("miniGrid dimensions: " + miniGrid.getWidth() + " x " + miniGrid.getHeight());
 
-        System.out.println("mainGrid layout: " + mainGrid.getLayoutX() + " x " + mainGrid.getLayoutY());
-        System.out.println("mainGrid dimensions: " + mainGrid.getWidth() + " x " + mainGrid.getHeight());
-
-        System.out.println("miniGrid layout: " + miniGrid.getLayoutX() + " x " + miniGrid.getLayoutY());
-        System.out.println("miniGrid dimensions: " + miniGrid.getWidth() + " x " + miniGrid.getHeight());
-
+        int startRow = winningCoordinates.get(0).get(0);
+        int endRow = winningCoordinates.get(2).get(0);
+        int startCol = winningCoordinates.get(0).get(1);
+        int endCol = winningCoordinates.get(2).get(1);
 
         if(startRow == endRow){ // horizontal line
             graphicsContext.strokeLine(
@@ -280,8 +286,9 @@ public class UltimateTicTacToe extends Application {
                         miniGrid.getLayoutX() + (endCol * cellSize) + (cellSize * 0.8),
                         miniGrid.getLayoutY() + (endRow * cellSize) + (cellSize * 0.2) );
             }
-
         }
+
+
     }
 
 
@@ -294,7 +301,6 @@ public class UltimateTicTacToe extends Application {
 
     private void handleCellButtonClick(Button button) {
         GridPane miniGrid = GameUtils.findParentGridPane(button);
-//        GameUtils.showWinningLine(miniGrid, 0, 0, 0, 2);
         if (isButtonEmpty(button) && isMiniGridClickable(miniGrid)) {
             Player player = game.player1Turn ? game.getPlayer1() : game.getPlayer2();
             Label buttonLabel = new Label();
@@ -367,12 +373,11 @@ public class UltimateTicTacToe extends Application {
     private void updateMiniGridIfWonOrTie(GridPane miniGrid){
         if(game.checkMiniGridForWin(miniGrid)){
             if(game.player1Turn){
-                updateLines(miniGrid, 0, 0, 2, 2);
+                updateLines(miniGrid, game.getWinningCoordinates());
                 miniGrid.setBackground(GameUtils.getPlayer1MiniGridBackground());
                 miniGrid.setStyle(String.format("-fx-border-color: %s;  -fx-border-width: %d;", PLAYER1_LABEL_COLOR, MINIGRID_COLOR_BORDER_WIDTH));
             }else{
-                updateLines(miniGrid, 2, 0, 0, 2);
-//                GameUtils.showWinningLine(miniGrid, 0, 0, 0, 2);
+                updateLines(miniGrid, game.getWinningCoordinates());
                 miniGrid.setBackground(GameUtils.getPlayer2MiniGridBackground());
                 miniGrid.setStyle(String.format("-fx-border-color: %s; -fx-border-width: %d;", PLAYER2_LABEL_COLOR, MINIGRID_COLOR_BORDER_WIDTH));
             }
