@@ -189,6 +189,7 @@ public class UltimateTicTacToe extends Application {
                     timeline.stop();
                     timeline = null;
                 }
+                graphicsContext.clearRect(mainGrid.getLayoutX(), mainGrid.getLayoutX(), mainGrid.getWidth(), mainGrid.getHeight());
             }
         });
     }
