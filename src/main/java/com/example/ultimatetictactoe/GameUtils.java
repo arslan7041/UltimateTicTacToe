@@ -112,13 +112,13 @@ public class GameUtils {
         return (GridPane) mainGrid.getChildren().get(col * 3 + row);
     }
 
-    public static void setWinningMiniGrids(GridPane mainGrid, List<List<Integer>> winningCoordinates){
+    public static void setWinningMiniGrids(GridPane mainGrid, List<WinningTriple> winningCoordinates){
         winningMiniGrids = new ArrayList<>();
-        for (List<Integer> coordinates : winningCoordinates) {
-            int row = coordinates.get(0);
-            int col = coordinates.get(1);
-            GridPane miniGrid = getGridPaneGivenIndices(mainGrid, row, col);
-            winningMiniGrids.add(miniGrid);
+        for (WinningTriple winningTriple : winningCoordinates) {
+            for(WinningTriple.Coordinate coordinate: winningTriple.getCoordinates()){
+                GridPane miniGrid = getGridPaneGivenIndices(mainGrid, coordinate.getX(), coordinate.getY());
+                winningMiniGrids.add(miniGrid);
+            }
         }
     }
 
