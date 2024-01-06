@@ -56,12 +56,8 @@ public class UltimateTicTacToe extends Application {
         initializeTurnLabel();
         initializeResultLabel();
 
-        player1UndoButton = createUndoButton(game.getPlayer1());
-        player2UndoButton = createUndoButton(game.getPlayer2());
-        player1UndoButton.setDisable(true);
-        player2UndoButton.setDisable(true);
-        player1UndoButton.setOnAction(e -> handleUndoButtonClick());
-        player2UndoButton.setOnAction(e -> handleUndoButtonClick());
+        player1UndoButton = createAndSetActionOnUndoButton(game.getPlayer1());
+        player2UndoButton = createAndSetActionOnUndoButton(game.getPlayer2());
 
         lastMove = null;
 
@@ -200,11 +196,13 @@ public class UltimateTicTacToe extends Application {
         resultLabel.setVisible(false);
     }
 
-    private Button createUndoButton(Player player){
+    private Button createAndSetActionOnUndoButton(Player player){
         Button undoButton = new Button();
         undoButton.setText(String.format("Player %s Undo", player.getLabelValue()));
         undoButton.setStyle(String.format("-fx-text-fill: %s; -fx-font-weight: bold; -fx-font-size: %fem; -fx-border-color: %s; -fx-border-width: %d;",
                 player.getLabelColor(), UNDO_BUTTON_FONT_SIZE, player.getLabelColor(), UNDO_BUTTON_BORDER_WIDTH));
+        undoButton.setDisable(true);
+        undoButton.setOnAction(e -> handleUndoButtonClick());
         return undoButton;
     }
 
@@ -237,7 +235,6 @@ public class UltimateTicTacToe extends Application {
             GameUtils.drawWinningLine(miniGrid, winningTriple.getCoordinates());
         }
     }
-
 
     private Button createCellButton() {
         Button button = new Button();
