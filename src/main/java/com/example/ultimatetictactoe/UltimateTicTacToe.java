@@ -9,13 +9,11 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
@@ -31,7 +29,6 @@ public class UltimateTicTacToe extends Application {
     private UltimateTicTacToeBackEndGame game;
     private GridPane mainGrid;
     private Canvas overlayCanvas;
-    private GraphicsContext graphicsContext;
     private Set<Node> clickableMiniGrids;
     private Label turnLabel;
     private Label resultLabel;
@@ -49,9 +46,9 @@ public class UltimateTicTacToe extends Application {
         game = new UltimateTicTacToeBackEndGame();
         initializeGrid();
         clickableMiniGrids = new HashSet<>(mainGrid.getChildren());
-
         overlayCanvas = GameUtils.createOverlayCanvas(mainGrid);
-        graphicsContext = overlayCanvas.getGraphicsContext2D();
+        GameUtils.setGraphicsContextObject(overlayCanvas);
+
         StackPane stackPane = new StackPane(mainGrid, overlayCanvas);
         stackPane.setStyle("-fx-background-color:transparent;");
         stackPane.setPadding(new Insets(0, 50, 0, 0)); // padding to the right of grid
@@ -115,7 +112,7 @@ public class UltimateTicTacToe extends Application {
 
         if(lastMiniGrid.isDisabled()){
             GameUtils.revertStateOfMiniGrid(lastMiniGrid);
-            GameUtils.clearGridLines(graphicsContext, lastMiniGrid);
+            GameUtils.clearGridLines(lastMiniGrid);
             game.undoMiniGridCompletionAndWin(lastMiniGrid);
         }
 
@@ -168,7 +165,7 @@ public class UltimateTicTacToe extends Application {
             if (buttonType == ButtonType.YES) {
                 clickableMiniGrids.addAll(mainGrid.getChildren());
                 mainGrid.setDisable(false);
-                GameUtils.clearGridLines(graphicsContext, mainGrid);
+                GameUtils.clearGridLines(mainGrid);
                 for(Node miniGridNode : mainGrid.getChildren()){
                     GridPane miniGrid = (GridPane) miniGridNode;
                     GameUtils.revertStateOfMiniGrid(miniGrid);
@@ -235,59 +232,14 @@ public class UltimateTicTacToe extends Application {
         return miniGrid;
     }
 
-    private void updateLines(GridPane miniGrid, List<WinningTriple> winningCoordinates) {
-        double cellSize = CELL_BUTTON_SIZE;
-
-        graphicsContext.setStroke(Color.BLACK); // Set line color
-        graphicsContext.setLineWidth(5); // Set line width
-
-//        System.out.println("OverlayCanvas layout: " + overlayCanvas.getLayoutX() + " x " + overlayCanvas.getLayoutY());
-//        System.out.println("OverlayCanvas dimensions: " + overlayCanvas.getWidth() + " x " + overlayCanvas.getHeight());
-//
-//        System.out.println("mainGrid layout: " + mainGrid.getLayoutX() + " x " + mainGrid.getLayoutY());
-//        System.out.println("mainGrid dimensions: " + mainGrid.getWidth() + " x " + mainGrid.getHeight());
-//
-//        System.out.println("miniGrid layout: " + miniGrid.getLayoutX() + " x " + miniGrid.getLayoutY());
-//        System.out.println("miniGrid dimensions: " + miniGrid.getWidth() + " x " + miniGrid.getHeight());
-
-
-
+    private void drawWinningLines(GridPane miniGrid, List<WinningTriple> winningCoordinates) {
         for(WinningTriple winningTriple : winningCoordinates){
             List<WinningTriple.Coordinate> coordinates = winningTriple.getCoordinates();
-
             int startRow = coordinates.get(0).getX();
             int endRow = coordinates.get(2).getX();
             int startCol = coordinates.get(0).getY();
             int endCol = coordinates.get(2).getY();
-
-            if(startRow == endRow){ // horizontal line
-                graphicsContext.strokeLine(
-                        miniGrid.getLayoutX() + (startCol * cellSize) + (cellSize * 0.2),
-                        miniGrid.getLayoutY() + (startRow * cellSize) + (cellSize * 0.5),
-                        miniGrid.getLayoutX() + (endCol * cellSize) + (cellSize * 0.8),
-                        miniGrid.getLayoutY() + (endRow * cellSize) + (cellSize * 0.5) );
-            }else if(startCol == endCol){ // vertical line
-                graphicsContext.strokeLine(
-                        miniGrid.getLayoutX() + (startCol * cellSize) + (cellSize * 0.5),
-                        miniGrid.getLayoutY() + (startRow * cellSize) + (cellSize * 0.2),
-                        miniGrid.getLayoutX() + (endCol * cellSize) + (cellSize * 0.5),
-                        miniGrid.getLayoutY() + (endRow * cellSize) + (cellSize * 0.8) );
-            }else{ // diagonal
-                if(endRow > startRow){ // down diagonal
-                    graphicsContext.strokeLine(
-                            miniGrid.getLayoutX() + (startCol * cellSize) + (cellSize * 0.2),
-                            miniGrid.getLayoutY() + (startRow * cellSize) + (cellSize * 0.2),
-                            miniGrid.getLayoutX() + (endCol * cellSize) + (cellSize * 0.8),
-                            miniGrid.getLayoutY() + (endRow * cellSize) + (cellSize * 0.8) );
-                }else{ // up diagonal
-                    graphicsContext.strokeLine(
-                            miniGrid.getLayoutX() + (startCol * cellSize) + (cellSize * 0.2),
-                            miniGrid.getLayoutY() + (startRow * cellSize) + (cellSize * 0.8),
-                            miniGrid.getLayoutX() + (endCol * cellSize) + (cellSize * 0.8),
-                            miniGrid.getLayoutY() + (endRow * cellSize) + (cellSize * 0.2) );
-                }
-            }
-
+            GameUtils.drawWinningLine(miniGrid, startRow, endRow, startCol, endCol);
         }
     }
 
@@ -379,11 +331,11 @@ public class UltimateTicTacToe extends Application {
     private void updateMiniGridIfWonOrTie(GridPane miniGrid) throws Exception {
         if(game.checkMiniGridForWin(miniGrid)){
             if(game.player1Turn){
-                updateLines(miniGrid, game.getLastWinningCoordinates());
+                drawWinningLines(miniGrid, game.getLastWinningCoordinates());
                 miniGrid.setBackground(GameUtils.getPlayer1MiniGridBackground());
                 miniGrid.setStyle(String.format("-fx-border-color: %s;  -fx-border-width: %d;", PLAYER1_LABEL_COLOR, MINIGRID_COLOR_BORDER_WIDTH));
             }else{
-                updateLines(miniGrid, game.getLastWinningCoordinates());
+                drawWinningLines(miniGrid, game.getLastWinningCoordinates());
                 miniGrid.setBackground(GameUtils.getPlayer2MiniGridBackground());
                 miniGrid.setStyle(String.format("-fx-border-color: %s; -fx-border-width: %d;", PLAYER2_LABEL_COLOR, MINIGRID_COLOR_BORDER_WIDTH));
             }
