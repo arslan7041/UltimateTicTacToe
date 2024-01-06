@@ -267,7 +267,7 @@ public class UltimateTicTacToe extends Application {
             button.setGraphic(buttonLabel);
 
             game.recordMove(button, miniGrid);
-            updateMiniGridIfWonOrTie(miniGrid);
+            updateMiniGridIfWonOrTie(miniGrid, player);
             lastMove = new LastMove(button, miniGrid, new HashSet<>(clickableMiniGrids)); // record move data in case of undo
 
             clearClickableMiniGridsHighlighting();
@@ -328,17 +328,11 @@ public class UltimateTicTacToe extends Application {
         resultLabel.setVisible(true);
     }
 
-    private void updateMiniGridIfWonOrTie(GridPane miniGrid) throws Exception {
+    private void updateMiniGridIfWonOrTie(GridPane miniGrid, Player player) throws Exception {
         if(game.checkMiniGridForWin(miniGrid)){
-            if(game.player1Turn){
-                drawWinningLines(miniGrid, game.getLastWinningCoordinates());
-                miniGrid.setBackground(GameUtils.getPlayer1MiniGridBackground());
-                miniGrid.setStyle(String.format("-fx-border-color: %s;  -fx-border-width: %d;", PLAYER1_LABEL_COLOR, MINIGRID_COLOR_BORDER_WIDTH));
-            }else{
-                drawWinningLines(miniGrid, game.getLastWinningCoordinates());
-                miniGrid.setBackground(GameUtils.getPlayer2MiniGridBackground());
-                miniGrid.setStyle(String.format("-fx-border-color: %s; -fx-border-width: %d;", PLAYER2_LABEL_COLOR, MINIGRID_COLOR_BORDER_WIDTH));
-            }
+            drawWinningLines(miniGrid, game.getLastWinningCoordinates());
+            miniGrid.setBackground(player.getId() == 1 ? GameUtils.getPlayer1MiniGridBackground() : GameUtils.getPlayer2MiniGridBackground());
+            miniGrid.setStyle(String.format("-fx-border-color: %s;  -fx-border-width: %d;", player.getLabelColor(), MINIGRID_COLOR_BORDER_WIDTH));
             miniGrid.setDisable(true);
         }else if(game.isGridComplete(miniGrid)){
             miniGrid.setEffect(GameUtils.getBlurEffect());

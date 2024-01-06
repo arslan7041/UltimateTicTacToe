@@ -192,6 +192,4 @@ public class GameUtils {
                 miniGrid.getLayoutX() + (endCol * cellSize) + (cellSize * 0.8),
                 miniGrid.getLayoutY() + (endRow * cellSize) + (cellSize * 0.2) );
     }
-
-
 }
