@@ -8,11 +8,12 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
@@ -27,6 +28,7 @@ public class UltimateTicTacToe extends Application {
 
     private UltimateTicTacToeBackEndGame game;
     private GridPane mainGrid;
+    private Canvas overlayCanvas;
     private Set<Node> clickableMiniGrids;
     private Label turnLabel;
     private Label resultLabel;
@@ -44,20 +46,18 @@ public class UltimateTicTacToe extends Application {
         game = new UltimateTicTacToeBackEndGame();
         initializeGrid();
         clickableMiniGrids = new HashSet<>(mainGrid.getChildren());
+        overlayCanvas = GameUtils.createOverlayCanvas(mainGrid);
+        GameUtils.setGraphicsContextObject(overlayCanvas);
 
-        ScrollPane scrollPane = new ScrollPane(mainGrid);
-        scrollPane.setStyle("-fx-background-color:transparent;");
-        scrollPane.setPadding(new Insets(0, 50, 0, 0)); // padding to the right of grid
+        StackPane stackPane = new StackPane(mainGrid, overlayCanvas);
+        stackPane.setStyle("-fx-background-color:transparent;");
+        stackPane.setPadding(new Insets(0, 50, 0, 0)); // padding to the right of grid
 
         initializeTurnLabel();
         initializeResultLabel();
 
-        player1UndoButton = createUndoButton(game.getPlayer1());
-        player2UndoButton = createUndoButton(game.getPlayer2());
-        player1UndoButton.setDisable(true);
-        player2UndoButton.setDisable(true);
-        player1UndoButton.setOnAction(e -> handleUndoButtonClick());
-        player2UndoButton.setOnAction(e -> handleUndoButtonClick());
+        player1UndoButton = createAndSetActionOnUndoButton(game.getPlayer1());
+        player2UndoButton = createAndSetActionOnUndoButton(game.getPlayer2());
 
         lastMove = null;
 
@@ -76,7 +76,7 @@ public class UltimateTicTacToe extends Application {
         verticalBox.setPadding(new Insets(245, 0, 0, 0)); // padding above to push resultLabel and startNewGameButton down
         VBox.setMargin(startNewGameButton, new Insets(30, 0, 0, 0));
 
-        HBox horizontalBox = new HBox(scrollPane, verticalBox);
+        HBox horizontalBox = new HBox(stackPane, verticalBox);
 
         VBox rootVerticalBox = new VBox(turnLabel, horizontalBox);
         rootVerticalBox.setPadding(new Insets(0, 0, 0, 50)); // pad left of root
@@ -108,6 +108,7 @@ public class UltimateTicTacToe extends Application {
 
         if(lastMiniGrid.isDisabled()){
             GameUtils.revertStateOfMiniGrid(lastMiniGrid);
+            GameUtils.clearGridLines(lastMiniGrid);
             game.undoMiniGridCompletionAndWin(lastMiniGrid);
         }
 
@@ -115,6 +116,7 @@ public class UltimateTicTacToe extends Application {
             mainGrid.setDisable(false);
             resultLabel.setVisible(false);
             turnLabel.setVisible(true);
+
             if(game.isTie){
                 game.isTie = false;
             } else if(game.getPlayer1().wonGame){
@@ -159,6 +161,7 @@ public class UltimateTicTacToe extends Application {
             if (buttonType == ButtonType.YES) {
                 clickableMiniGrids.addAll(mainGrid.getChildren());
                 mainGrid.setDisable(false);
+                GameUtils.clearGridLines(mainGrid);
                 for(Node miniGridNode : mainGrid.getChildren()){
                     GridPane miniGrid = (GridPane) miniGridNode;
                     GameUtils.revertStateOfMiniGrid(miniGrid);
@@ -193,22 +196,26 @@ public class UltimateTicTacToe extends Application {
         resultLabel.setVisible(false);
     }
 
-    private Button createUndoButton(Player player){
+    private Button createAndSetActionOnUndoButton(Player player){
         Button undoButton = new Button();
         undoButton.setText(String.format("Player %s Undo", player.getLabelValue()));
         undoButton.setStyle(String.format("-fx-text-fill: %s; -fx-font-weight: bold; -fx-font-size: %fem; -fx-border-color: %s; -fx-border-width: %d;",
                 player.getLabelColor(), UNDO_BUTTON_FONT_SIZE, player.getLabelColor(), UNDO_BUTTON_BORDER_WIDTH));
+        undoButton.setDisable(true);
+        undoButton.setOnAction(e -> handleUndoButtonClick());
         return undoButton;
     }
 
     private void initializeGrid() {
         mainGrid = new GridPane();
         for (int i = 0; i < 3; i++) {
+            GridPane miniGrid = null;
             for (int j = 0; j < 3; j++) {
-                GridPane miniGrid = createMiniGrid();
+                miniGrid = createMiniGrid();
                 mainGrid.add(miniGrid, i, j);
             }
         }
+
     }
 
     private GridPane createMiniGrid() {
@@ -223,14 +230,26 @@ public class UltimateTicTacToe extends Application {
         return miniGrid;
     }
 
+    private void drawWinningLines(GridPane miniGrid, List<WinningTriple> winningCoordinates) {
+        for(WinningTriple winningTriple : winningCoordinates){
+            GameUtils.drawWinningLine(miniGrid, winningTriple.getCoordinates());
+        }
+    }
+
     private Button createCellButton() {
         Button button = new Button();
         button.setMinSize(CELL_BUTTON_SIZE, CELL_BUTTON_SIZE);
-        button.setOnAction(e -> handleCellButtonClick(button));
+        button.setOnAction(e -> {
+            try {
+                handleCellButtonClick(button);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        });
         return button;
     }
 
-    private void handleCellButtonClick(Button button) {
+    private void handleCellButtonClick(Button button) throws Exception {
         GridPane miniGrid = GameUtils.findParentGridPane(button);
         if (isButtonEmpty(button) && isMiniGridClickable(miniGrid)) {
             Player player = game.player1Turn ? game.getPlayer1() : game.getPlayer2();
@@ -240,7 +259,7 @@ public class UltimateTicTacToe extends Application {
             button.setGraphic(buttonLabel);
 
             game.recordMove(button, miniGrid);
-            updateMiniGridIfWonOrTie(miniGrid);
+            updateMiniGridIfWonOrTie(miniGrid, player);
             lastMove = new LastMove(button, miniGrid, new HashSet<>(clickableMiniGrids)); // record move data in case of undo
 
             clearClickableMiniGridsHighlighting();
@@ -289,7 +308,7 @@ public class UltimateTicTacToe extends Application {
             resultLabel.setStyle(String.format("-fx-font-size: %s; -fx-font-weight: bold; -fx-text-fill: %s;", RESULT_LABEL_FONT_SIZE, winner.getLabelColor()));
         }
 
-        List<List<Integer>> winningCoordinates = game.getWinningCoordinates();
+        List<WinningTriple> winningCoordinates = game.getLastWinningCoordinates();
         if( !winningCoordinates.isEmpty() ){
             GameUtils.setWinningMiniGrids(mainGrid, winningCoordinates);
             List<GridPane> winningMiniGrids = GameUtils.getWinningMiniGrids();
@@ -301,15 +320,11 @@ public class UltimateTicTacToe extends Application {
         resultLabel.setVisible(true);
     }
 
-    private void updateMiniGridIfWonOrTie(GridPane miniGrid){
+    private void updateMiniGridIfWonOrTie(GridPane miniGrid, Player player) throws Exception {
         if(game.checkMiniGridForWin(miniGrid)){
-            if(game.player1Turn){
-                miniGrid.setBackground(GameUtils.getPlayer1MiniGridBackground());
-                miniGrid.setStyle(String.format("-fx-border-color: %s;  -fx-border-width: %d;", PLAYER1_LABEL_COLOR, MINIGRID_COLOR_BORDER_WIDTH));
-            }else{
-                miniGrid.setBackground(GameUtils.getPlayer2MiniGridBackground());
-                miniGrid.setStyle(String.format("-fx-border-color: %s; -fx-border-width: %d;", PLAYER2_LABEL_COLOR, MINIGRID_COLOR_BORDER_WIDTH));
-            }
+            drawWinningLines(miniGrid, game.getLastWinningCoordinates());
+            miniGrid.setBackground(player.getId() == 1 ? GameUtils.getPlayer1MiniGridBackground() : GameUtils.getPlayer2MiniGridBackground());
+            miniGrid.setStyle(String.format("-fx-border-color: %s;  -fx-border-width: %d;", player.getLabelColor(), MINIGRID_COLOR_BORDER_WIDTH));
             miniGrid.setDisable(true);
         }else if(game.isGridComplete(miniGrid)){
             miniGrid.setEffect(GameUtils.getBlurEffect());

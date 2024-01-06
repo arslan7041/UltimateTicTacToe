@@ -2,9 +2,12 @@ package com.example.ultimatetictactoe;
 
 import javafx.animation.Animation;
 import javafx.animation.FadeTransition;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.effect.GaussianBlur;
@@ -18,17 +21,19 @@ import javafx.util.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.example.ultimatetictactoe.Constants.GLOW_SPREAD;
-import static com.example.ultimatetictactoe.Constants.MINIGRID_BLACK_BORDER_WIDTH;
+import static com.example.ultimatetictactoe.Constants.*;
 
 public class GameUtils {
+
+    private static final int cellSize = CELL_BUTTON_SIZE;
 
     private static final DropShadow glowEffect = createGlowEffect();
     private static final Background player1MiniGridBackground = createPlayer1MiniGridBackground();
     private static final Background player2MiniGridBackground = createPlayer2MiniGridBackground();
     private static final Background transparentMiniGridBackground = createTransparentMiniGridBackground();
 
-    private static List<GridPane> winningMiniGrids = null;
+    private static final List<GridPane> winningMiniGrids = new ArrayList<>();
+    private static GraphicsContext graphicsContext = null;
 
     private static DropShadow createGlowEffect() {
         DropShadow glow = new DropShadow();
@@ -93,6 +98,10 @@ public class GameUtils {
         miniGrid.setStyle(String.format("-fx-border-color: black; -fx-border-width: %d;", MINIGRID_BLACK_BORDER_WIDTH));
     }
 
+    public static void clearGridLines(GridPane grid){
+        graphicsContext.clearRect(grid.getLayoutX(), grid.getLayoutY(), grid.getWidth(), grid.getHeight());
+    }
+
     public static GridPane findParentGridPane(Node node) {
         Parent parent = node.getParent();
         while (parent != null && !(parent instanceof GridPane)) {
@@ -105,17 +114,87 @@ public class GameUtils {
         return (GridPane) mainGrid.getChildren().get(col * 3 + row);
     }
 
-    public static void setWinningMiniGrids(GridPane mainGrid, List<List<Integer>> winningCoordinates){
-        winningMiniGrids = new ArrayList<>();
-        for (List<Integer> coordinates : winningCoordinates) {
-            int row = coordinates.get(0);
-            int col = coordinates.get(1);
-            GridPane miniGrid = getGridPaneGivenIndices(mainGrid, row, col);
-            winningMiniGrids.add(miniGrid);
+    public static void setWinningMiniGrids(GridPane mainGrid, List<WinningTriple> winningCoordinates){
+        winningMiniGrids.clear();
+        for (WinningTriple winningTriple : winningCoordinates) {
+            for(WinningTriple.Coordinate coordinate: winningTriple.getCoordinates()){
+                GridPane miniGrid = getGridPaneGivenIndices(mainGrid, coordinate.getX(), coordinate.getY());
+                winningMiniGrids.add(miniGrid);
+            }
         }
     }
 
     public static List<GridPane> getWinningMiniGrids(){
         return winningMiniGrids;
+    }
+
+    public static Canvas createOverlayCanvas(GridPane baseGridPane) {
+        Canvas overlayCanvas = new Canvas();
+        overlayCanvas.setStyle("-fx-background-color: transparent;");
+        overlayCanvas.setMouseTransparent(true);
+
+        Platform.runLater(() -> {
+            overlayCanvas.setWidth(baseGridPane.getBoundsInLocal().getWidth());
+            overlayCanvas.setHeight(baseGridPane.getBoundsInLocal().getHeight());
+            overlayCanvas.setLayoutX(baseGridPane.getLayoutX());
+            overlayCanvas.setLayoutY(baseGridPane.getLayoutY());
+        });
+
+        return overlayCanvas;
+    }
+
+    public static void setGraphicsContextObject(Canvas overlayCanvas){
+        graphicsContext = overlayCanvas.getGraphicsContext2D();
+        graphicsContext.setStroke(Color.BLACK);
+        graphicsContext.setLineWidth(5);
+    }
+
+    public static void drawWinningLine(GridPane miniGrid, List<WinningTriple.Coordinate> coordinates){
+        int startRow = coordinates.get(0).getX();
+        int endRow = coordinates.get(2).getX();
+        int startCol = coordinates.get(0).getY();
+        int endCol = coordinates.get(2).getY();
+
+        if(startRow == endRow){
+            drawHorizontalLine(miniGrid, startRow, endRow, startCol, endCol);
+        }else if(startCol == endCol){
+            drawVerticalLine(miniGrid, startRow, endRow, startCol, endCol);
+        }else if(endRow > startRow){
+            drawDownDiagonal(miniGrid, startRow, endRow, startCol, endCol);
+        }else{
+            drawUpDiagonal(miniGrid, startRow, endRow, startCol, endCol);
+        }
+    }
+
+    private static void drawHorizontalLine(GridPane miniGrid, int startRow, int endRow, int startCol, int endCol) {
+        graphicsContext.strokeLine(
+                miniGrid.getLayoutX() + (startCol * cellSize) + (cellSize * 0.2),
+                miniGrid.getLayoutY() + (startRow * cellSize) + (cellSize * 0.5),
+                miniGrid.getLayoutX() + (endCol * cellSize) + (cellSize * 0.8),
+                miniGrid.getLayoutY() + (endRow * cellSize) + (cellSize * 0.5) );
+    }
+
+    private static void drawVerticalLine(GridPane miniGrid, int startRow, int endRow, int startCol, int endCol) {
+        graphicsContext.strokeLine(
+                miniGrid.getLayoutX() + (startCol * cellSize) + (cellSize * 0.5),
+                miniGrid.getLayoutY() + (startRow * cellSize) + (cellSize * 0.2),
+                miniGrid.getLayoutX() + (endCol * cellSize) + (cellSize * 0.5),
+                miniGrid.getLayoutY() + (endRow * cellSize) + (cellSize * 0.8) );
+    }
+
+    private static void drawDownDiagonal(GridPane miniGrid, int startRow, int endRow, int startCol, int endCol) {
+        graphicsContext.strokeLine(
+                miniGrid.getLayoutX() + (startCol * cellSize) + (cellSize * 0.2),
+                miniGrid.getLayoutY() + (startRow * cellSize) + (cellSize * 0.2),
+                miniGrid.getLayoutX() + (endCol * cellSize) + (cellSize * 0.8),
+                miniGrid.getLayoutY() + (endRow * cellSize) + (cellSize * 0.8) );
+    }
+
+    private static void drawUpDiagonal(GridPane miniGrid, int startRow, int endRow, int startCol, int endCol) {
+        graphicsContext.strokeLine(
+                miniGrid.getLayoutX() + (startCol * cellSize) + (cellSize * 0.2),
+                miniGrid.getLayoutY() + (startRow * cellSize) + (cellSize * 0.8),
+                miniGrid.getLayoutX() + (endCol * cellSize) + (cellSize * 0.8),
+                miniGrid.getLayoutY() + (endRow * cellSize) + (cellSize * 0.2) );
     }
 }
