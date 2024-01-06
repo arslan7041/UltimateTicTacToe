@@ -115,10 +115,7 @@ public class UltimateTicTacToe extends Application {
 
         if(lastMiniGrid.isDisabled()){
             GameUtils.revertStateOfMiniGrid(lastMiniGrid);
-            System.out.println("lastMiniGrid dimensions: " + lastMiniGrid.getLayoutX() + " x " + lastMiniGrid.getLayoutY());
-            System.out.println("lastMiniGrid dimensions: " + lastMiniGrid.getWidth() + " x " + lastMiniGrid.getHeight());
-            graphicsContext.clearRect(lastMiniGrid.getLayoutX(), lastMiniGrid.getLayoutY(), lastMiniGrid.getWidth(), lastMiniGrid.getHeight());
-
+            GameUtils.clearGridLines(graphicsContext, lastMiniGrid);
             game.undoMiniGridCompletionAndWin(lastMiniGrid);
         }
 
@@ -171,6 +168,7 @@ public class UltimateTicTacToe extends Application {
             if (buttonType == ButtonType.YES) {
                 clickableMiniGrids.addAll(mainGrid.getChildren());
                 mainGrid.setDisable(false);
+                GameUtils.clearGridLines(graphicsContext, mainGrid);
                 for(Node miniGridNode : mainGrid.getChildren()){
                     GridPane miniGrid = (GridPane) miniGridNode;
                     GameUtils.revertStateOfMiniGrid(miniGrid);
@@ -189,7 +187,6 @@ public class UltimateTicTacToe extends Application {
                     timeline.stop();
                     timeline = null;
                 }
-                graphicsContext.clearRect(mainGrid.getLayoutX(), mainGrid.getLayoutX(), mainGrid.getWidth(), mainGrid.getHeight());
             }
         });
     }

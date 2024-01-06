@@ -51,9 +51,7 @@ public class UltimateTicTacToeBackEndGame {
         int i = GridPane.getRowIndex(miniGrid);
         int j = GridPane.getColumnIndex(miniGrid);
 
-        int[][] miniGridArr = grid[i][j];
-        winningCoordinates.clear();
-        if (checkGridRows(miniGridArr) || checkGridColumns(miniGridArr) || checkGridDiagonals(miniGridArr)) {
+        if (foundWinningRowsColumnsDiagonals(grid[i][j])) {
             if (player1Turn) {
                 player1.wins++;
                 miniGridWinsBoard[i][j] = 1;
@@ -67,8 +65,7 @@ public class UltimateTicTacToeBackEndGame {
     }
 
     public boolean checkGameForWinOrTie(){
-        winningCoordinates.clear();
-        if (checkGridRows(miniGridWinsBoard) || checkGridColumns(miniGridWinsBoard) || checkGridDiagonals(miniGridWinsBoard)) {
+        if (foundWinningRowsColumnsDiagonals(miniGridWinsBoard)) {
             if (player1Turn) {
                 player1.wonGame = true;
             } else {
@@ -106,6 +103,21 @@ public class UltimateTicTacToeBackEndGame {
             }
         }
         return true;
+    }
+
+    private boolean foundWinningRowsColumnsDiagonals(int[][] grid){
+        winningCoordinates.clear();
+        boolean foundWin = false;
+        if(checkGridRows(grid)){
+            foundWin = true;
+        }
+        if(checkGridColumns(grid)){
+            foundWin = true;
+        }
+        if(checkGridColumns(grid)){
+            foundWin = true;
+        }
+        return foundWin;
     }
 
     private boolean checkGridRows(int[][] grid) {

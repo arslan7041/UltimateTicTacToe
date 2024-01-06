@@ -7,12 +7,15 @@ import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.effect.GaussianBlur;
-import javafx.scene.layout.*;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.CornerRadii;
+import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Line;
 import javafx.util.Duration;
 
 import java.util.ArrayList;
@@ -93,6 +96,10 @@ public class GameUtils {
         miniGrid.setStyle(String.format("-fx-border-color: black; -fx-border-width: %d;", MINIGRID_BLACK_BORDER_WIDTH));
     }
 
+    public static void clearGridLines(GraphicsContext graphicsContext, GridPane grid){
+        graphicsContext.clearRect(grid.getLayoutX(), grid.getLayoutY(), grid.getWidth(), grid.getHeight());
+    }
+
     public static GridPane findParentGridPane(Node node) {
         Parent parent = node.getParent();
         while (parent != null && !(parent instanceof GridPane)) {
@@ -119,28 +126,6 @@ public class GameUtils {
         return winningMiniGrids;
     }
 
-    public static void showWinningLine(GridPane gridPane, int row1, int col1, int row2, int col2) {
-//        GridPane overlayGridPane = createOverlayGridPane(gridPane);
-
-        Line line = new Line();
-        line.setStroke(Color.RED);
-        line.setStrokeWidth(5);
-
-        // Calculate the coordinates for the line based on the buttons in the grid
-        double startX = computeXCoordinate(gridPane, col1);
-        double startY = computeYCoordinate(gridPane, row1);
-        double endX = computeXCoordinate(gridPane, col2);
-        double endY = computeYCoordinate(gridPane, row2);
-
-        line.setStartX(startX);
-        line.setStartY(startY);
-        line.setEndX(endX);
-//        line.setEndY(endY);
-//
-//        overlayGridPane.setMouseTransparent(true);
-//
-//        overlayGridPane.getChildren().add(line);
-    }
 
     private static double computeXCoordinate(GridPane gridPane, int col) {
         double cellWidth = gridPane.getWidth() / 3;
