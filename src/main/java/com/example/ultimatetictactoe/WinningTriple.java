@@ -16,7 +16,7 @@ public class WinningTriple {
 
     public WinningTriple addCoordinate(int x, int y) throws Exception {
         if(coordinates.size() == 3){
-            throw new Exception("WinningTriple object already has 3 Coordinates");
+            throw new Exception("Attempt made to add more than 3 Coordinates into WinningTriple object");
         }
         coordinates.add(new Coordinate(x, y));
         return this;

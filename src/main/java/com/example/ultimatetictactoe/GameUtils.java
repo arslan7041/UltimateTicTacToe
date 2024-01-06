@@ -145,11 +145,16 @@ public class GameUtils {
 
     public static void setGraphicsContextObject(Canvas overlayCanvas){
         graphicsContext = overlayCanvas.getGraphicsContext2D();
-        graphicsContext.setStroke(Color.BLACK); // Set line color
-        graphicsContext.setLineWidth(5); // Set line width
+        graphicsContext.setStroke(Color.BLACK);
+        graphicsContext.setLineWidth(5);
     }
 
-    public static void drawWinningLine(GridPane miniGrid, int startRow, int endRow, int startCol, int endCol){
+    public static void drawWinningLine(GridPane miniGrid, List<WinningTriple.Coordinate> coordinates){
+        int startRow = coordinates.get(0).getX();
+        int endRow = coordinates.get(2).getX();
+        int startCol = coordinates.get(0).getY();
+        int endCol = coordinates.get(2).getY();
+
         if(startRow == endRow){
             drawHorizontalLine(miniGrid, startRow, endRow, startCol, endCol);
         }else if(startCol == endCol){

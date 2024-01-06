@@ -234,12 +234,7 @@ public class UltimateTicTacToe extends Application {
 
     private void drawWinningLines(GridPane miniGrid, List<WinningTriple> winningCoordinates) {
         for(WinningTriple winningTriple : winningCoordinates){
-            List<WinningTriple.Coordinate> coordinates = winningTriple.getCoordinates();
-            int startRow = coordinates.get(0).getX();
-            int endRow = coordinates.get(2).getX();
-            int startCol = coordinates.get(0).getY();
-            int endCol = coordinates.get(2).getY();
-            GameUtils.drawWinningLine(miniGrid, startRow, endRow, startCol, endCol);
+            GameUtils.drawWinningLine(miniGrid, winningTriple.getCoordinates());
         }
     }
 
