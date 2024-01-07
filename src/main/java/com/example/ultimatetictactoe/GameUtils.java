@@ -51,7 +51,7 @@ public class GameUtils {
     public static GaussianBlur getBlurEffect(){
         if(blurEffect == null){
             blurEffect = new GaussianBlur();
-            blurEffect.setRadius(5);
+            blurEffect.setRadius(BLUR_RADIUS);
         }
         return blurEffect;
     }
@@ -138,7 +138,7 @@ public class GameUtils {
     public static void setGraphicsContextObject(Canvas overlayCanvas){
         graphicsContext = overlayCanvas.getGraphicsContext2D();
         graphicsContext.setStroke(Color.BLACK);
-        graphicsContext.setLineWidth(5);
+        graphicsContext.setLineWidth(WIN_LINE_WIDTH);
     }
 
     public static void drawWinningLine(GridPane miniGrid, List<WinningTriple.Coordinate> coordinates){

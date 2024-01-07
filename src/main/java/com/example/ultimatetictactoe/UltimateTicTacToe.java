@@ -198,7 +198,6 @@ public class UltimateTicTacToe extends Application {
                 mainGrid.add(miniGrid, i, j);
             }
         }
-
     }
 
     private GridPane createMiniGrid() {
@@ -267,7 +266,6 @@ public class UltimateTicTacToe extends Application {
                 player2UndoButton.setDisable(false);
                 player1UndoButton.setDisable(true);
             }
-//            game.printUltimateTicTacToeGrid();
         }
     }
 
@@ -282,13 +280,11 @@ public class UltimateTicTacToe extends Application {
     }
 
     private void showEndGameResult(){
-        if(game.isTie){
-            resultLabel.setText("IT'S A TIE!");
-            resultLabel.setStyle(String.format("-fx-font-size: %s; -fx-font-weight: bold; -fx-text-fill: black;", RESULT_LABEL_FONT_SIZE));
-        } else{
+        if (game.isTie) {
+            setCommonLabelStyles("IT'S A TIE!", "black", "black");
+        } else {
             Player winner = game.getPlayer1().wonGame ? game.getPlayer1() : game.getPlayer2();
-            resultLabel.setText(String.format("PLAYER %s WON!", winner.getLabelValue()));
-            resultLabel.setStyle(String.format("-fx-font-size: %s; -fx-font-weight: bold; -fx-text-fill: %s;", RESULT_LABEL_FONT_SIZE, winner.getLabelColor()));
+            setCommonLabelStyles(String.format("PLAYER %s WON!", winner.getLabelValue()), winner.getLabelColor(), winner.getLabelColor());
         }
 
         List<WinningTriple> winningCoordinates = game.getLastWinningCoordinates();
@@ -300,6 +296,19 @@ public class UltimateTicTacToe extends Application {
         FadeTransition fadeTransition = GameUtils.getFadeTransition(resultLabel);
         fadeTransition.play();
         resultLabel.setVisible(true);
+    }
+
+    private void setCommonLabelStyles(String text, String textColor, String borderColor) {
+        resultLabel.setText(text);
+        resultLabel.setStyle(String.format(
+                        "-fx-font-size: %s; " +
+                        "-fx-font-weight: bold; " +
+                        "-fx-text-fill: %s; " +
+                        "-fx-border-color: %s; " +
+                        "-fx-border-width: %dpx; " +
+                        "-fx-border-radius: %d; " +
+                        "-fx-padding: %d;",
+                RESULT_LABEL_FONT_SIZE, textColor, borderColor, RESULT_LABEL_BORDER_WIDTH, RESULT_LABEL_BORDER_RADIUS, RESULT_LABEL_PADDING));
     }
 
     private void updateMiniGridIfWonOrTie(GridPane miniGrid, Player player) throws Exception {
