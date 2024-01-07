@@ -29,53 +29,50 @@ public class GameUtils {
 
     private static final int cellSize = CELL_BUTTON_SIZE;
 
-    private static final DropShadow glowEffect = createGlowEffect();
-    private static final GaussianBlur blurEffect = createBlurEffect();
-    private static final Background player1MiniGridBackground = createPlayer1MiniGridBackground();
-    private static final Background player2MiniGridBackground = createPlayer2MiniGridBackground();
+    private static DropShadow glowEffect;
+    private static GaussianBlur blurEffect;
+    private static Background player1MiniGridBackground;
+    private static Background player2MiniGridBackground;
 
     private static final List<GridPane> winningMiniGrids = new ArrayList<>();
     private static GraphicsContext graphicsContext = null;
     private static Timeline timeline = null;
     private static Background coloredBackground = null;
 
-    private static DropShadow createGlowEffect() {
-        DropShadow glow = new DropShadow();
-        glow.setColor(Color.YELLOW);
-        glow.setSpread(GLOW_SPREAD); // Set the width of the glow
-        return glow;
+    private static DropShadow getGlowEffect() {
+        if(glowEffect == null){
+            glowEffect = new DropShadow();
+            glowEffect.setColor(Color.YELLOW);
+            glowEffect.setSpread(GLOW_SPREAD);
+        }
+        return glowEffect;
     }
 
-    public static GaussianBlur createBlurEffect(){
-        GaussianBlur blur = new GaussianBlur();
-        blur.setRadius(5);
-        return blur;
-    }
-
-    private static Background createPlayer1MiniGridBackground(){
-        return new Background(new BackgroundFill(Color.BLUE,
-                CornerRadii.EMPTY,
-                Insets.EMPTY));
-    }
-
-    private static Background createPlayer2MiniGridBackground(){
-        return new Background(new BackgroundFill(Color.rgb(255, 127, 127),
-                CornerRadii.EMPTY,
-                Insets.EMPTY));
+    public static GaussianBlur getBlurEffect(){
+        if(blurEffect == null){
+            blurEffect = new GaussianBlur();
+            blurEffect.setRadius(5);
+        }
+        return blurEffect;
     }
 
     public static Background getPlayer1MiniGridBackground(){
+        if(player1MiniGridBackground == null){
+            player1MiniGridBackground = new Background(new BackgroundFill(Color.BLUE,
+                    CornerRadii.EMPTY,
+                    Insets.EMPTY));
+        }
         return player1MiniGridBackground;
     }
 
     public static Background getPlayer2MiniGridBackground(){
+        if(player2MiniGridBackground == null){
+            player2MiniGridBackground = new Background(new BackgroundFill(Color.rgb(255, 127, 127),
+                    CornerRadii.EMPTY,
+                    Insets.EMPTY));
+        }
         return player2MiniGridBackground;
     }
-
-    public static GaussianBlur getBlurEffect(){
-        return blurEffect;
-    }
-
 
     public static FadeTransition getFadeTransition(Label label){
         FadeTransition fadeTransition = new FadeTransition(Duration.seconds(0.75), label);
@@ -86,7 +83,7 @@ public class GameUtils {
     }
 
     public static void toggleMiniGridHighlighting(GridPane miniGrid, boolean flag){
-        DropShadow glow = flag ? glowEffect : null;
+        DropShadow glow = flag ? getGlowEffect() : null;
         miniGrid.getChildren().forEach(child -> child.setEffect(glow));
     }
 
