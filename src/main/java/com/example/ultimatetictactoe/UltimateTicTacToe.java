@@ -1,8 +1,6 @@
 package com.example.ultimatetictactoe;
 
 import javafx.animation.FadeTransition;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -13,11 +11,12 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
-import javafx.scene.layout.*;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.util.Duration;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -28,14 +27,12 @@ public class UltimateTicTacToe extends Application {
 
     private UltimateTicTacToeBackEndGame game;
     private GridPane mainGrid;
-    private Canvas overlayCanvas;
     private Set<Node> clickableMiniGrids;
     private Label turnLabel;
     private Label resultLabel;
     private Button player1UndoButton;
     private Button player2UndoButton;
     private LastMove lastMove;
-    private Timeline timeline;
 
     public static void main(String[] args) {
         launch(args);
@@ -46,7 +43,7 @@ public class UltimateTicTacToe extends Application {
         game = new UltimateTicTacToeBackEndGame();
         initializeGrid();
         clickableMiniGrids = new HashSet<>(mainGrid.getChildren());
-        overlayCanvas = GameUtils.createOverlayCanvas(mainGrid);
+        Canvas overlayCanvas = GameUtils.createOverlayCanvas(mainGrid);
         GameUtils.setGraphicsContextObject(overlayCanvas);
 
         StackPane stackPane = new StackPane(mainGrid, overlayCanvas);
@@ -106,6 +103,7 @@ public class UltimateTicTacToe extends Application {
         lastButton.setGraphic(null);
         game.undoMove(lastButton, lastMiniGrid);
 
+        GameUtils.stopBackGroundFlashing();
         if(lastMiniGrid.isDisabled()){
             GameUtils.revertStateOfMiniGrid(lastMiniGrid);
             GameUtils.clearGridLines(lastMiniGrid);
@@ -124,18 +122,6 @@ public class UltimateTicTacToe extends Application {
             } else if(game.getPlayer2().wonGame){
                 game.getPlayer2().wonGame = false;
             }
-        }
-
-        if(timeline != null){
-            Background background = game.player1Turn ? GameUtils.getPlayer1MiniGridBackground() : GameUtils.getPlayer2MiniGridBackground();
-            List<GridPane> winningMiniGrids = GameUtils.getWinningMiniGrids();
-            for(GridPane winningMiniGrid : winningMiniGrids){
-                if( !winningMiniGrid.equals(lastMiniGrid) ){ // don't color background of last minigrid
-                    winningMiniGrid.setBackground(background);
-                }
-            }
-            timeline.stop();
-            timeline = null;
         }
 
         if(game.player1Turn) {
@@ -162,6 +148,7 @@ public class UltimateTicTacToe extends Application {
                 clickableMiniGrids.addAll(mainGrid.getChildren());
                 mainGrid.setDisable(false);
                 GameUtils.clearGridLines(mainGrid);
+                GameUtils.stopBackGroundFlashing();
                 for(Node miniGridNode : mainGrid.getChildren()){
                     GridPane miniGrid = (GridPane) miniGridNode;
                     GameUtils.revertStateOfMiniGrid(miniGrid);
@@ -176,10 +163,6 @@ public class UltimateTicTacToe extends Application {
                 toggleTurnLabel();
                 turnLabel.setVisible(true);
                 resultLabel.setVisible(false);
-                if(timeline != null){
-                    timeline.stop();
-                    timeline = null;
-                }
             }
         });
     }
@@ -311,8 +294,7 @@ public class UltimateTicTacToe extends Application {
         List<WinningTriple> winningCoordinates = game.getLastWinningCoordinates();
         if( !winningCoordinates.isEmpty() ){
             GameUtils.setWinningMiniGrids(mainGrid, winningCoordinates);
-            List<GridPane> winningMiniGrids = GameUtils.getWinningMiniGrids();
-            flashBackgrounds(winningMiniGrids);
+            GameUtils.flashBackGrounds(game.getPlayer1().wonGame ? GameUtils.getPlayer1MiniGridBackground() : GameUtils.getPlayer2MiniGridBackground());
         }
 
         FadeTransition fadeTransition = GameUtils.getFadeTransition(resultLabel);
@@ -357,21 +339,4 @@ public class UltimateTicTacToe extends Application {
             }
         }
     }
-
-    private void flashBackgrounds(List<GridPane> winningMiniGrids) {
-        Background coloredBackground = game.getPlayer1().wonGame ? GameUtils.getPlayer1MiniGridBackground() : GameUtils.getPlayer2MiniGridBackground();
-        Background transparentBackground = GameUtils.getTransparentMiniGridBackground();
-        List<KeyFrame> keyFrameList = new ArrayList<>();
-
-        for(GridPane miniGrid : winningMiniGrids){
-            keyFrameList.add(new KeyFrame(Duration.seconds(0.5), e -> miniGrid.setBackground(coloredBackground)));
-            keyFrameList.add(new KeyFrame(Duration.seconds(1), e -> miniGrid.setBackground(transparentBackground)));
-        }
-
-        timeline = new Timeline();
-        timeline.getKeyFrames().addAll(keyFrameList);
-        timeline.setCycleCount(Timeline.INDEFINITE);
-        timeline.play();
-    }
-
 }

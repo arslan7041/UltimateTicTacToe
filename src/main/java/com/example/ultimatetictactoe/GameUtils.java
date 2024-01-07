@@ -2,6 +2,8 @@ package com.example.ultimatetictactoe;
 
 import javafx.animation.Animation;
 import javafx.animation.FadeTransition;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
@@ -30,10 +32,11 @@ public class GameUtils {
     private static final DropShadow glowEffect = createGlowEffect();
     private static final Background player1MiniGridBackground = createPlayer1MiniGridBackground();
     private static final Background player2MiniGridBackground = createPlayer2MiniGridBackground();
-    private static final Background transparentMiniGridBackground = createTransparentMiniGridBackground();
 
     private static final List<GridPane> winningMiniGrids = new ArrayList<>();
     private static GraphicsContext graphicsContext = null;
+    private static Timeline timeline = null;
+    private static Background coloredBackground = null;
 
     private static DropShadow createGlowEffect() {
         DropShadow glow = new DropShadow();
@@ -54,22 +57,12 @@ public class GameUtils {
                 Insets.EMPTY));
     }
 
-    private static Background createTransparentMiniGridBackground(){
-        return new Background(new BackgroundFill(Color.TRANSPARENT,
-                CornerRadii.EMPTY,
-                Insets.EMPTY));
-    }
-
     public static Background getPlayer1MiniGridBackground(){
         return player1MiniGridBackground;
     }
 
     public static Background getPlayer2MiniGridBackground(){
         return player2MiniGridBackground;
-    }
-
-    public static Background getTransparentMiniGridBackground(){
-        return transparentMiniGridBackground;
     }
 
     public static GaussianBlur getBlurEffect(){
@@ -122,10 +115,6 @@ public class GameUtils {
                 winningMiniGrids.add(miniGrid);
             }
         }
-    }
-
-    public static List<GridPane> getWinningMiniGrids(){
-        return winningMiniGrids;
     }
 
     public static Canvas createOverlayCanvas(GridPane baseGridPane) {
@@ -196,5 +185,30 @@ public class GameUtils {
                 miniGrid.getLayoutY() + (startRow * cellSize) + (cellSize * 0.8),
                 miniGrid.getLayoutX() + (endCol * cellSize) + (cellSize * 0.8),
                 miniGrid.getLayoutY() + (endRow * cellSize) + (cellSize * 0.2) );
+    }
+
+    public static void flashBackGrounds(Background background){
+        coloredBackground = background;
+        List<KeyFrame> keyFrameList = new ArrayList<>();
+
+        for(GridPane miniGrid : winningMiniGrids){
+            keyFrameList.add(new KeyFrame(Duration.seconds(0.5), e -> miniGrid.setBackground(coloredBackground)));
+            keyFrameList.add(new KeyFrame(Duration.seconds(1), e -> miniGrid.setBackground(null)));
+        }
+
+        timeline = new Timeline();
+        timeline.getKeyFrames().addAll(keyFrameList);
+        timeline.setCycleCount(Timeline.INDEFINITE);
+        timeline.play();
+    }
+
+    public static void stopBackGroundFlashing(){
+        if(timeline != null){
+            timeline.stop();
+            timeline = null;
+            for(GridPane miniGrid : winningMiniGrids){
+                miniGrid.setBackground(coloredBackground);
+            }
+        }
     }
 }
