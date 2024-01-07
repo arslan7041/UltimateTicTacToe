@@ -30,6 +30,7 @@ public class GameUtils {
     private static final int cellSize = CELL_BUTTON_SIZE;
 
     private static final DropShadow glowEffect = createGlowEffect();
+    private static final GaussianBlur blurEffect = createBlurEffect();
     private static final Background player1MiniGridBackground = createPlayer1MiniGridBackground();
     private static final Background player2MiniGridBackground = createPlayer2MiniGridBackground();
 
@@ -43,6 +44,12 @@ public class GameUtils {
         glow.setColor(Color.YELLOW);
         glow.setSpread(GLOW_SPREAD); // Set the width of the glow
         return glow;
+    }
+
+    public static GaussianBlur createBlurEffect(){
+        GaussianBlur blur = new GaussianBlur();
+        blur.setRadius(5);
+        return blur;
     }
 
     private static Background createPlayer1MiniGridBackground(){
@@ -66,10 +73,9 @@ public class GameUtils {
     }
 
     public static GaussianBlur getBlurEffect(){
-        GaussianBlur blur = new GaussianBlur();
-        blur.setRadius(5);
-        return blur;
+        return blurEffect;
     }
+
 
     public static FadeTransition getFadeTransition(Label label){
         FadeTransition fadeTransition = new FadeTransition(Duration.seconds(0.75), label);
