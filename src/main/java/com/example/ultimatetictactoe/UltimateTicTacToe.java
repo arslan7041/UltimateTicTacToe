@@ -117,10 +117,10 @@ public class UltimateTicTacToe extends Application {
 
             if(game.isTie){
                 game.isTie = false;
-            } else if(game.getPlayer1().wonGame){
-                game.getPlayer1().wonGame = false;
-            } else if(game.getPlayer2().wonGame){
-                game.getPlayer2().wonGame = false;
+            } else if(game.getPlayer1().hasWonGame()){
+                game.getPlayer1().hasWonGame(false);
+            } else if(game.getPlayer2().hasWonGame()){
+                game.getPlayer2().hasWonGame(false);
             }
         }
 
@@ -283,14 +283,14 @@ public class UltimateTicTacToe extends Application {
         if (game.isTie) {
             setCommonLabelStyles("IT'S A TIE!", "black", "black");
         } else {
-            Player winner = game.getPlayer1().wonGame ? game.getPlayer1() : game.getPlayer2();
+            Player winner = game.getPlayer1().hasWonGame() ? game.getPlayer1() : game.getPlayer2();
             setCommonLabelStyles(String.format("PLAYER %s WON!", winner.getLabelValue()), winner.getLabelColor(), winner.getLabelColor());
         }
 
         List<WinningTriple> winningCoordinates = game.getLastWinningCoordinates();
         if( !winningCoordinates.isEmpty() ){
             GameUtils.setWinningMiniGrids(mainGrid, winningCoordinates);
-            GameUtils.flashBackGrounds(game.getPlayer1().wonGame ? GameUtils.getPlayer1MiniGridBackground() : GameUtils.getPlayer2MiniGridBackground());
+            GameUtils.flashBackGrounds(game.getPlayer1().hasWonGame() ? GameUtils.getPlayer1MiniGridBackground() : GameUtils.getPlayer2MiniGridBackground());
         }
 
         FadeTransition fadeTransition = GameUtils.getFadeTransition(resultLabel);

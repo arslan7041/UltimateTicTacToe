@@ -26,7 +26,6 @@ import java.util.List;
 import static com.example.ultimatetictactoe.Constants.*;
 
 public class GameUtils {
-
     private static final int cellSize = CELL_BUTTON_SIZE;
 
     private static DropShadow glowEffect;

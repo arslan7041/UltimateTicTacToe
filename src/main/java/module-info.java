@@ -9,6 +9,7 @@ module com.example.ultimatetictactoe {
     requires org.kordamp.ikonli.javafx;
     requires org.kordamp.bootstrapfx.core;
     requires eu.hansolo.tilesfx;
+    requires static lombok;
 
     opens com.example.ultimatetictactoe to javafx.fxml;
     exports com.example.ultimatetictactoe;

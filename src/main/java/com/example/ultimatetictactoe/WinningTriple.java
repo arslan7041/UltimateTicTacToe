@@ -1,17 +1,17 @@
 package com.example.ultimatetictactoe;
 
+import lombok.Data;
+import lombok.Getter;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class WinningTriple {
-    private List<Coordinate> coordinates;
+    @Getter
+    private final List<Coordinate> coordinates;
 
     public WinningTriple() {
         this.coordinates = new ArrayList<>();
-    }
-
-    public List<Coordinate> getCoordinates() {
-        return coordinates;
     }
 
     public WinningTriple addCoordinate(int x, int y) throws Exception {
@@ -22,29 +22,9 @@ public class WinningTriple {
         return this;
     }
 
+    @Data
     public static class Coordinate {
-        private int x;
-        private int y;
-
-        public Coordinate(int x, int y) {
-            this.x = x;
-            this.y = y;
-        }
-
-        public int getX() {
-            return x;
-        }
-
-        public void setX(int x) {
-            this.x = x;
-        }
-
-        public int getY() {
-            return y;
-        }
-
-        public void setY(int y) {
-            this.y = y;
-        }
+        private final int x;
+        private final int y;
     }
 }
