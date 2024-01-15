@@ -1,5 +1,7 @@
 package com.example.ultimatetictactoe;
 
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -28,6 +30,13 @@ public class Player {
         this.miniGridWins = 0;
         this.hasWonGame = false;
         this.undos = 1;
+    }
+
+    public void makeMove(Button button){
+        Label buttonLabel = new Label();
+        buttonLabel.setText(this.getLabelValue());
+        buttonLabel.setStyle(String.format("-fx-text-fill: %s; -fx-font-weight: bold; -fx-font-size: %dem;", this.getLabelColor(), this.getLabelSize()));
+        button.setGraphic(buttonLabel);
     }
 
     public void incrementMiniGridWins(){
