@@ -233,7 +233,7 @@ public class UltimateTicTacToe extends Application {
 
     private void handleCellButtonClick(Button button) throws Exception {
         GridPane miniGrid = GameUtils.findParentGridPane(button);
-        if (isButtonEmpty(button) && isMiniGridClickable(miniGrid)) {
+        if(isMiniGridClickable(miniGrid) && isButtonEmpty(button)) {
             Player player = game.player1Turn ? game.getPlayer1() : game.getPlayer2();
             Label buttonLabel = new Label();
             buttonLabel.setText(player.getLabelValue());
@@ -328,7 +328,7 @@ public class UltimateTicTacToe extends Application {
     }
 
     private void clearClickableMiniGridsHighlighting(){
-        clickableMiniGrids.forEach(node -> GameUtils.toggleMiniGridHighlighting((GridPane) node, false));
+        clickableMiniGrids.forEach(miniGrid -> GameUtils.toggleMiniGridHighlighting((GridPane) miniGrid, false));
     }
 
     private void updateClickableMiniGrids(Button button) {
