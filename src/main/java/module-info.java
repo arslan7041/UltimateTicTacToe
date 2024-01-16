@@ -13,4 +13,6 @@ module com.example.ultimatetictactoe {
 
     opens com.example.ultimatetictactoe to javafx.fxml;
     exports com.example.ultimatetictactoe;
+    exports com.example.ultimatetictactoe.artificialintelligence;
+    opens com.example.ultimatetictactoe.artificialintelligence to javafx.fxml;
 }

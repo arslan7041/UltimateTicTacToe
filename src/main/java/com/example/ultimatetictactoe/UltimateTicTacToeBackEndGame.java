@@ -65,7 +65,7 @@ public class UltimateTicTacToeBackEndGame {
         return false;
     }
 
-    public boolean checkGameForWinOrTie() throws Exception {
+    public boolean isGameOver() throws Exception {
         if (foundWinningRowsColumnsDiagonals(miniGridWinsBoard)) {
             if (player1Turn) {
                 player1.hasWonGame(true);
@@ -84,9 +84,9 @@ public class UltimateTicTacToeBackEndGame {
         return player1.hasWonGame() || player2.hasWonGame() || isTie;
     }
 
-    public boolean isGridComplete(GridPane grid){
-        int i = GridPane.getRowIndex(grid);
-        int j = GridPane.getColumnIndex(grid);
+    public boolean isGridComplete(GridPane miniGrid){
+        int i = GridPane.getRowIndex(miniGrid);
+        int j = GridPane.getColumnIndex(miniGrid);
 
         if(isGridComplete(this.grid[i][j])){
             miniGridWinsBoard[i][j] = -1;

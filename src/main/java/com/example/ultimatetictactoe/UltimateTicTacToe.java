@@ -1,5 +1,7 @@
 package com.example.ultimatetictactoe;
 
+import com.example.ultimatetictactoe.artificialintelligence.ArtificialIntelligenceEngine;
+import com.example.ultimatetictactoe.artificialintelligence.BestMove;
 import javafx.animation.FadeTransition;
 import javafx.application.Application;
 import javafx.geometry.Insets;
@@ -33,6 +35,8 @@ public class UltimateTicTacToe extends Application {
     private Button player1UndoButton;
     private Button player2UndoButton;
     private LastMove lastMove;
+
+    private ArtificialIntelligenceEngine artificialIntelligenceEngine;
 
     public static void main(String[] args) {
         launch(args);
@@ -83,6 +87,8 @@ public class UltimateTicTacToe extends Application {
         primaryStage.setScene(scene);
         primaryStage.setTitle("Ultimate Tic Tac Toe");
         primaryStage.show();
+
+        artificialIntelligenceEngine = new ArtificialIntelligenceEngine(game, clickableMiniGrids);
     }
 
     private void handleUndoButtonClick() {
@@ -241,12 +247,16 @@ public class UltimateTicTacToe extends Application {
             updateMiniGridIfWonOrTie(miniGrid, player);
             lastMove = new LastMove(button, miniGrid, new HashSet<>(clickableMiniGrids)); // record move data in case of undo
             clearClickableMiniGrids();
-            boolean hasGameEnded = game.checkGameForWinOrTie();
+            boolean isGameOver = game.isGameOver();
 
             game.player1Turn = !game.player1Turn;
-            if(!hasGameEnded){
+            if(!isGameOver){
                 updateClickableMiniGrids(button);
                 toggleTurnLabel();
+                if(!game.player1Turn){
+                    BestMove bestMove = artificialIntelligenceEngine.getBestAIMove();
+                    bestMove.getMove().getButton().fire();
+                }
             }else{
                 showEndGameResult();
                 mainGrid.setDisable(true);
@@ -261,6 +271,13 @@ public class UltimateTicTacToe extends Application {
                 player1UndoButton.setDisable(true);
             }
         }
+
+//        game.printUltimateTicTacToeGrid();
+
+
+    }
+
+    private void makAIMove() {
     }
 
     private void toggleTurnLabel(){
