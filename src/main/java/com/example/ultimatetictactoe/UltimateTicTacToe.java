@@ -2,7 +2,9 @@ package com.example.ultimatetictactoe;
 
 import com.example.ultimatetictactoe.artificialintelligence.ArtificialIntelligenceEngine;
 import com.example.ultimatetictactoe.artificialintelligence.BestMove;
+import com.example.ultimatetictactoe.artificialintelligence.MoveEvent;
 import javafx.animation.FadeTransition;
+import javafx.animation.PauseTransition;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -18,6 +20,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.util.HashSet;
 import java.util.List;
@@ -234,6 +237,7 @@ public class UltimateTicTacToe extends Application {
                 ex.printStackTrace();
             }
         });
+        button.addEventHandler(MoveEvent.MOVE_COMPLETED, eventHandler -> AIMoveHandler());
         return button;
     }
 
@@ -253,10 +257,6 @@ public class UltimateTicTacToe extends Application {
             if(!isGameOver){
                 updateClickableMiniGrids(button);
                 toggleTurnLabel();
-                if(!game.player1Turn){
-                    BestMove bestMove = artificialIntelligenceEngine.getBestAIMove();
-                    bestMove.getMove().getButton().fire();
-                }
             }else{
                 showEndGameResult();
                 mainGrid.setDisable(true);
@@ -273,11 +273,25 @@ public class UltimateTicTacToe extends Application {
         }
 
 //        game.printUltimateTicTacToeGrid();
-
-
+        if(!game.player1Turn){
+            button.fireEvent(new MoveEvent(MoveEvent.MOVE_COMPLETED));
+        }
     }
 
-    private void makAIMove() {
+    public void AIMoveHandler(){
+        PauseTransition pause = new PauseTransition(Duration.seconds(1)); // Adjust the duration as needed
+        pause.setOnFinished(event -> {
+            BestMove bestMove = null;
+            try {
+                bestMove = artificialIntelligenceEngine.getBestAIMove();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            if (bestMove.getMove() != null) {
+                bestMove.getMove().getButton().fire();
+            }
+        });
+        pause.play();
     }
 
     private void toggleTurnLabel(){
