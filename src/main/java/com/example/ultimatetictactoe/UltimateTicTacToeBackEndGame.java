@@ -16,27 +16,29 @@ public class UltimateTicTacToeBackEndGame {
     private int[][][][] grid;
     private int[][] miniGridWinsBoard;
     private List<WinningTriple> lastWinningCoordinates;
-
-    public boolean player1Turn = true;
-    public boolean isTie = false;
+    private boolean player1Turn;
+    private boolean isTie;
 
 
     public UltimateTicTacToeBackEndGame() {
+        player1 = new Player(1, PLAYER1_LABEL, PLAYER1_LABEL_COLOR, PLAYER1_LABEL_SIZE);
+        player2 = new Player(2, PLAYER2_LABEL, PLAYER2_LABEL_COLOR, PLAYER2_LABEL_SIZE);
         grid = new int[3][3][3][3];
         miniGridWinsBoard = new int[3][3];
         lastWinningCoordinates =  new ArrayList<>();
-        player1 = new Player(1, PLAYER1_LABEL, PLAYER1_LABEL_COLOR, PLAYER1_LABEL_SIZE);
-        player2 = new Player(2, PLAYER2_LABEL, PLAYER2_LABEL_COLOR, PLAYER2_LABEL_SIZE);
+        player1Turn = true;
+        isTie = false;
+
     }
 
     public void resetBackEndGame(){
+        player1.resetPlayer();
+        player2.resetPlayer();
         grid = new int[3][3][3][3];
         miniGridWinsBoard = new int[3][3];
         lastWinningCoordinates = new ArrayList<>();
-        isTie = false;
-        player1.resetPlayer();
-        player2.resetPlayer();
         player1Turn = true;
+        isTie = false;
     }
 
     public void recordMove(Button button, GridPane miniGrid){
@@ -205,6 +207,8 @@ public class UltimateTicTacToeBackEndGame {
             System.out.println();
         }
 
+        System.out.println("Player 1 mini grid wins: " + getPlayer1().getMiniGridWins());
+        System.out.println("Player 2 mini grid wins: " + getPlayer2().getMiniGridWins());
         System.out.println("=================================================");
     }
 }

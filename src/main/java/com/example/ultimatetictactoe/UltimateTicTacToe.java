@@ -95,7 +95,7 @@ public class UltimateTicTacToe extends Application {
     }
 
     private void handleUndoButtonClick() {
-        game.player1Turn = !game.player1Turn;
+        game.setPlayer1Turn(!game.isPlayer1Turn());
         toggleTurnLabel();
         Button lastButton = lastMove.getButton();
         GridPane lastMiniGrid = lastMove.getMiniGrid();
@@ -124,8 +124,8 @@ public class UltimateTicTacToe extends Application {
             resultLabel.setVisible(false);
             turnLabel.setVisible(true);
 
-            if(game.isTie){
-                game.isTie = false;
+            if(game.isTie()){
+                game.setTie(false);
             } else if(game.getPlayer1().hasWonGame()){
                 game.getPlayer1().hasWonGame(false);
             } else if(game.getPlayer2().hasWonGame()){
@@ -133,7 +133,7 @@ public class UltimateTicTacToe extends Application {
             }
         }
 
-        if(game.player1Turn) {
+        if(game.isPlayer1Turn()) {
             player1UndoButton.setDisable(true);
         } else{
             player2UndoButton.setDisable(true);
@@ -244,7 +244,7 @@ public class UltimateTicTacToe extends Application {
     private void handleCellButtonClick(Button button) throws Exception {
         GridPane miniGrid = GameUtils.findParentGridPane(button);
         if(isMiniGridClickable(miniGrid) && isButtonEmpty(button)) {
-            Player player = game.player1Turn ? game.getPlayer1() : game.getPlayer2();
+            Player player = game.isPlayer1Turn() ? game.getPlayer1() : game.getPlayer2();
 
             player.makeMove(button);
             game.recordMove(button, miniGrid);
@@ -253,7 +253,7 @@ public class UltimateTicTacToe extends Application {
             clearClickableMiniGrids();
             boolean isGameOver = game.isGameOver();
 
-            game.player1Turn = !game.player1Turn;
+            game.setPlayer1Turn(!game.isPlayer1Turn());
             if(!isGameOver){
                 updateClickableMiniGrids(button);
                 toggleTurnLabel();
@@ -270,11 +270,11 @@ public class UltimateTicTacToe extends Application {
                 player2UndoButton.setDisable(false);
                 player1UndoButton.setDisable(true);
             }
-        }
 
-//        game.printUltimateTicTacToeGrid();
-        if(!game.player1Turn){
-            button.fireEvent(new MoveEvent(MoveEvent.MOVE_COMPLETED));
+            game.printUltimateTicTacToeGrid();
+            if(!game.isPlayer1Turn()){
+                button.fireEvent(new MoveEvent(MoveEvent.MOVE_COMPLETED));
+            }
         }
     }
 
@@ -295,7 +295,7 @@ public class UltimateTicTacToe extends Application {
     }
 
     private void toggleTurnLabel(){
-        Player player = game.player1Turn ? game.getPlayer1() : game.getPlayer2();
+        Player player = game.isPlayer1Turn() ? game.getPlayer1() : game.getPlayer2();
         turnLabel.setText(String.format("Player %s's Turn", player.getLabelValue()));
         turnLabel.setStyle(String.format("-fx-font-size: %d; -fx-font-weight: bold; -fx-text-fill: %s;", TURN_LABEL_FONT_SIZE, player.getLabelColor()));
     }
@@ -305,7 +305,7 @@ public class UltimateTicTacToe extends Application {
     }
 
     private void showEndGameResult(){
-        if (game.isTie) {
+        if (game.isTie()) {
             setCommonLabelStyles("IT'S A TIE!", "black", "black");
         } else {
             Player winner = game.getPlayer1().hasWonGame() ? game.getPlayer1() : game.getPlayer2();
