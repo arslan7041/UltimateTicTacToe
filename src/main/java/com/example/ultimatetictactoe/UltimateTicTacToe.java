@@ -91,7 +91,7 @@ public class UltimateTicTacToe extends Application {
         primaryStage.setTitle("Ultimate Tic Tac Toe");
         primaryStage.show();
 
-        artificialIntelligenceEngine = new ArtificialIntelligenceEngine(game, clickableMiniGrids);
+        artificialIntelligenceEngine = new ArtificialIntelligenceEngine();
     }
 
     private void handleUndoButtonClick() {
@@ -283,7 +283,7 @@ public class UltimateTicTacToe extends Application {
         pause.setOnFinished(event -> {
             BestMove bestMove = null;
             try {
-                bestMove = artificialIntelligenceEngine.getBestAIMove();
+                bestMove = artificialIntelligenceEngine.getBestAIMove(game, clickableMiniGrids);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

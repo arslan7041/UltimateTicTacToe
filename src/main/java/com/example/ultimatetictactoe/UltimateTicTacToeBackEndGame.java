@@ -19,7 +19,6 @@ public class UltimateTicTacToeBackEndGame {
     private boolean player1Turn;
     private boolean isTie;
 
-
     public UltimateTicTacToeBackEndGame() {
         player1 = new Player(1, PLAYER1_LABEL, PLAYER1_LABEL_COLOR, PLAYER1_LABEL_SIZE);
         player2 = new Player(2, PLAYER2_LABEL, PLAYER2_LABEL_COLOR, PLAYER2_LABEL_SIZE);

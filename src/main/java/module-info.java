@@ -10,6 +10,7 @@ module com.example.ultimatetictactoe {
     requires org.kordamp.bootstrapfx.core;
     requires eu.hansolo.tilesfx;
     requires static lombok;
+    requires static modelmapper;
 
     opens com.example.ultimatetictactoe to javafx.fxml;
     exports com.example.ultimatetictactoe;
