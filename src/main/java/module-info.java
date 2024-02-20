@@ -11,6 +11,7 @@ module com.example.ultimatetictactoe {
     requires eu.hansolo.tilesfx;
     requires static lombok;
     requires static modelmapper;
+    requires java.sql;
 
     opens com.example.ultimatetictactoe to javafx.fxml;
     exports com.example.ultimatetictactoe;

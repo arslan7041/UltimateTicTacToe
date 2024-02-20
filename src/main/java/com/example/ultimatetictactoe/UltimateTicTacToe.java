@@ -91,7 +91,7 @@ public class UltimateTicTacToe extends Application {
         primaryStage.setTitle("Ultimate Tic Tac Toe");
         primaryStage.show();
 
-        artificialIntelligenceEngine = new ArtificialIntelligenceEngine();
+        artificialIntelligenceEngine = new ArtificialIntelligenceEngine(mainGrid);
     }
 
     private void handleUndoButtonClick() {
