@@ -271,7 +271,7 @@ public class UltimateTicTacToe extends Application {
                 player1UndoButton.setDisable(true);
             }
 
-            game.printUltimateTicTacToeGrid();
+//            game.printUltimateTicTacToeGrid();
             if(!game.isPlayer1Turn()){
                 button.fireEvent(new MoveEvent(MoveEvent.MOVE_COMPLETED));
             }
@@ -279,7 +279,7 @@ public class UltimateTicTacToe extends Application {
     }
 
     public void AIMoveHandler(){
-        PauseTransition pause = new PauseTransition(Duration.seconds(1)); // Adjust the duration as needed
+        PauseTransition pause = new PauseTransition(Duration.seconds(0.5)); // Adjust the duration as needed
         pause.setOnFinished(event -> {
             BestMove bestMove = null;
             try {

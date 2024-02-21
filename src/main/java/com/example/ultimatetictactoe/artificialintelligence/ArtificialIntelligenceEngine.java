@@ -14,6 +14,7 @@ import java.util.Set;
 public class ArtificialIntelligenceEngine {
     private GameState game;
     private final GridPane mainGrid;
+    private int minimaxCalls = 0;
 
     public BestMove getBestAIMove(UltimateTicTacToeBackEndGame game, Set<Node> clickableMiniGrids) throws Exception {
         ModelMapper modelMapper = ModelMapperSingleton.getInstance();
@@ -21,23 +22,27 @@ public class ArtificialIntelligenceEngine {
         this.game.setClickableMiniGrids(new HashSet<>(clickableMiniGrids));
         this.game.setMainGrid(mainGrid);
 
-        int depth = 4;
-        return minimax(depth);
+        int depth = 9;
+        minimaxCalls = 0;
+        BestMove result = minimax(depth, false);
+        System.out.println("Number of minimax calls: " + minimaxCalls);
+        return result;
     }
 
-    private BestMove minimax(int depth) {
+    private BestMove minimax(int depth, boolean maximizingPlayer) {
+        minimaxCalls++;
         if (depth == 0 || isGameOver()) {
             return new BestMove(evaluate(), null);
         }
 
         BestMove bestMove = new BestMove();
 
-        if (game.isPlayer1Turn()) { // player1 = maximising player
+        if (maximizingPlayer) { // player1 = maximising player
             int maxEval = Integer.MIN_VALUE;
             List<Move> availableMoves = game.getAvailableMoves();
             for (Move move : availableMoves) {
                 game.simulateTurn(move.getButton(), move.getMiniGrid());
-                BestMove m = minimax(depth - 1);
+                BestMove m = minimax(depth - 1, false);
                 if (m.getScore() > maxEval) {
                     maxEval = m.getScore();
                     bestMove.setScore(maxEval);
@@ -51,7 +56,7 @@ public class ArtificialIntelligenceEngine {
             List<Move> availableMoves = game.getAvailableMoves();
             for (Move move : availableMoves) {
                 game.simulateTurn(move.getButton(), move.getMiniGrid());
-                BestMove m = minimax(depth - 1);
+                BestMove m = minimax(depth - 1, true);
                 if (m.getScore() < minEval) {
                     minEval = m.getScore();
                     bestMove.setScore(minEval);
@@ -73,7 +78,7 @@ public class ArtificialIntelligenceEngine {
         }else if(game.getPlayer1().hasWonGame()){
             return 10000;
         }else if(game.getPlayer2().hasWonGame()){
-            return 10000;
+            return -10000;
         }else{
             return game.getPlayer1().getMiniGridWins() - game.getPlayer2().getMiniGridWins();
         }

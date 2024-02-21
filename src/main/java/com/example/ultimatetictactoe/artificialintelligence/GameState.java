@@ -32,12 +32,13 @@ public class GameState {
         if(!isGameOver){
             updateClickableMiniGrids(button);
         }
-        printUltimateTicTacToeGrid();
+//        printUltimateTicTacToeGrid();
     }
 
     public void undoTurn(Button button, GridPane miniGrid){
         undoMove(button, miniGrid);
         undoMiniGridWonOrTie(miniGrid);
+//        setPlayer1Turn(!isPlayer1Turn());
     }
 
     private void recordMove(Button button, GridPane miniGrid){
