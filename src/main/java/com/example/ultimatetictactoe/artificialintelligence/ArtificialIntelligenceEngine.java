@@ -22,7 +22,7 @@ public class ArtificialIntelligenceEngine {
         this.game.setClickableMiniGrids(new HashSet<>(clickableMiniGrids));
         this.game.setMainGrid(mainGrid);
 
-        int depth = 4;
+        int depth = 7;
         minimaxCalls = 0;
         BestMove result = minimax(depth, false);
         System.out.println("Number of minimax calls: " + minimaxCalls);
@@ -41,7 +41,7 @@ public class ArtificialIntelligenceEngine {
             int maxEval = Integer.MIN_VALUE;
             List<Move> availableMoves = game.getAvailableMoves();
             for (Move move : availableMoves) {
-                game.simulateTurn(move.getButton(), move.getMiniGrid());
+                game.simulateTurn(move.getButton(), move.getMiniGrid(), maximizingPlayer);
                 BestMove m = minimax(depth - 1, false);
                 if (m.getScore() > maxEval) {
                     maxEval = m.getScore();
@@ -55,7 +55,7 @@ public class ArtificialIntelligenceEngine {
             int minEval = Integer.MAX_VALUE;
             List<Move> availableMoves = game.getAvailableMoves();
             for (Move move : availableMoves) {
-                game.simulateTurn(move.getButton(), move.getMiniGrid());
+                game.simulateTurn(move.getButton(), move.getMiniGrid(), maximizingPlayer);
                 BestMove m = minimax(depth - 1, true);
                 if (m.getScore() < minEval) {
                     minEval = m.getScore();
@@ -74,12 +74,16 @@ public class ArtificialIntelligenceEngine {
 
     private int heur1() {
         if(game.isTie() ){
+            game.printUltimateTicTacToeGrid();
             return 0;
         }else if(game.getPlayer1().hasWonGame()){
+            game.printUltimateTicTacToeGrid();
             return 10000;
         }else if(game.getPlayer2().hasWonGame()){
+            game.printUltimateTicTacToeGrid();
             return -10000;
         }else{
+//            game.printUltimateTicTacToeGrid();
             return game.getPlayer1().getMiniGridWins() - game.getPlayer2().getMiniGridWins();
         }
     }

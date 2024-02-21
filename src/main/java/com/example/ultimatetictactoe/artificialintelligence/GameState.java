@@ -22,13 +22,15 @@ public class GameState {
     private boolean isTie;
     private Set<Node> clickableMiniGrids;
     private GridPane mainGrid;
+    private boolean maximizingPlayer;
 
-    public void simulateTurn(Button button, GridPane miniGrid){
+    public void simulateTurn(Button button, GridPane miniGrid, boolean maximizingPlayer){
+        this.maximizingPlayer = maximizingPlayer;
         recordMove(button, miniGrid);
         updateMiniGridIfWonOrTie(miniGrid);
         clickableMiniGrids.clear();
         boolean isGameOver = isGameOver();
-        setPlayer1Turn(!isPlayer1Turn());
+//        setPlayer1Turn(!isPlayer1Turn());
         if(!isGameOver){
             updateClickableMiniGrids(button);
         }
@@ -38,6 +40,7 @@ public class GameState {
     public void undoTurn(Button button, GridPane miniGrid){
         undoMove(button, miniGrid);
         undoMiniGridWonOrTie(miniGrid);
+        undoGameOver();
 //        setPlayer1Turn(!isPlayer1Turn());
     }
 
@@ -47,7 +50,7 @@ public class GameState {
         int row = GridPane.getRowIndex(button);
         int col = GridPane.getColumnIndex(button);
 
-        grid[i][j][row][col] = player1Turn ? 1 : 2;
+        grid[i][j][row][col] = maximizingPlayer ? 1 : 2;
     }
 
     private void undoMove(Button button, GridPane miniGrid) {
@@ -84,7 +87,7 @@ public class GameState {
         int j = GridPane.getColumnIndex(miniGrid);
 
         if (foundWinningRowsColumnsDiagonals(grid[i][j])) {
-            if (player1Turn) {
+            if (maximizingPlayer) {
                 player1.incrementMiniGridWins();
                 miniGridWinsBoard[i][j] = 1;
             } else {
@@ -163,7 +166,7 @@ public class GameState {
 
     public boolean isGameOver() {
         if (foundWinningRowsColumnsDiagonals(miniGridWinsBoard)) {
-            if (player1Turn) {
+            if (maximizingPlayer) {
                 player1.hasWonGame(true);
             } else {
                 player2.hasWonGame(true);
@@ -178,6 +181,12 @@ public class GameState {
             }
         }
         return player1.hasWonGame() || player2.hasWonGame() || isTie;
+    }
+
+    private void undoGameOver() {
+        isTie = false;
+        player1.hasWonGame(false);
+        player2.hasWonGame(false);
     }
 
     private void updateClickableMiniGrids(Button button) {
