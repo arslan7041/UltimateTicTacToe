@@ -16,13 +16,13 @@ public class ArtificialIntelligenceEngine {
     private final GridPane mainGrid;
     private int minimaxCalls = 0;
 
-    public BestMove getBestAIMove(UltimateTicTacToeBackEndGame game, Set<Node> clickableMiniGrids) throws Exception {
+    public BestMove getBestAIMove(UltimateTicTacToeBackEndGame game, Set<Node> clickableMiniGrids) {
         ModelMapper modelMapper = ModelMapperSingleton.getInstance();
         this.game = modelMapper.map(game, GameState.class);
         this.game.setClickableMiniGrids(new HashSet<>(clickableMiniGrids));
         this.game.setMainGrid(mainGrid);
 
-        int depth = 9;
+        int depth = 4;
         minimaxCalls = 0;
         BestMove result = minimax(depth, false);
         System.out.println("Number of minimax calls: " + minimaxCalls);

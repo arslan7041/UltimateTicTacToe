@@ -281,14 +281,10 @@ public class UltimateTicTacToe extends Application {
     public void AIMoveHandler(){
         PauseTransition pause = new PauseTransition(Duration.seconds(0.5)); // Adjust the duration as needed
         pause.setOnFinished(event -> {
-            BestMove bestMove = null;
-            try {
-                bestMove = artificialIntelligenceEngine.getBestAIMove(game, clickableMiniGrids);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+            BestMove bestMove = artificialIntelligenceEngine.getBestAIMove(game, clickableMiniGrids);
             if (bestMove.getMove() != null) {
                 bestMove.getMove().getButton().fire();
+                bestMove.getMove().getButton().requestFocus();
             }
         });
         pause.play();
