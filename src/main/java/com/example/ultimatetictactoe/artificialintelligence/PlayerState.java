@@ -4,9 +4,9 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 @Data
-public class PlayerState {
+public class  PlayerState {
     private int miniGridWins;
-    @Accessors(fluent = true)
+    @Accessors(fluent = true, chain = false)
     private boolean hasWonGame;
 
     public void incrementMiniGridWins(){
@@ -16,4 +16,5 @@ public class PlayerState {
     public void decrementMiniGridWins(){
         miniGridWins--;
     }
+
 }

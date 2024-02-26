@@ -12,7 +12,7 @@ public class Player {
     private final String labelColor;
     private final int labelSize;
     private int miniGridWins;
-    @Accessors(fluent = true)
+    @Accessors(fluent = true, chain = false)
     private boolean hasWonGame;
 
     public int undos = 1;
