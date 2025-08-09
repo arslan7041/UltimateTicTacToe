@@ -6,65 +6,82 @@ import javafx.scene.layout.GridPane;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 
 @RequiredArgsConstructor
 public class ArtificialIntelligenceEngine {
     private GameState game;
     private final GridPane mainGrid;
     private int minimaxCalls = 0;
+    private static final Random random = new Random();
 
     public BestMove getBestAIMove(UltimateTicTacToeBackEndGame game, Set<Node> clickableMiniGrids) {
         ModelMapper modelMapper = ModelMapperSingleton.getInstance();
         this.game = modelMapper.map(game, GameState.class);
+        this.game.getPlayer1().hasWonGame(game.getPlayer1().hasWonGame());
+        this.game.getPlayer2().hasWonGame(game.getPlayer2().hasWonGame());
         this.game.setClickableMiniGrids(new HashSet<>(clickableMiniGrids));
         this.game.setMainGrid(mainGrid);
 
-        int depth = 7;
+        int depth = 9;
         minimaxCalls = 0;
-        BestMove result = minimax(depth, false);
+        List<BestMove> bestMoves = minimax(depth, false, Integer.MIN_VALUE, Integer.MAX_VALUE);
         System.out.println("Number of minimax calls: " + minimaxCalls);
-        return result;
+        return bestMoves.get( random.nextInt(bestMoves.size()) );
     }
 
-    private BestMove minimax(int depth, boolean maximizingPlayer) {
+    private List<BestMove> minimax(int depth, boolean maximizingPlayer, int alpha, int beta) {
         minimaxCalls++;
         if (depth == 0 || isGameOver()) {
-            return new BestMove(evaluate(), null);
+            return List.of(new BestMove(evaluate(), null));
         }
 
-        BestMove bestMove = new BestMove();
+        List<Move> availableMoves = game.getAvailableMoves();
+        List<BestMove> bestMoves = new ArrayList<>();
 
         if (maximizingPlayer) { // player1 = maximising player
             int maxEval = Integer.MIN_VALUE;
-            List<Move> availableMoves = game.getAvailableMoves();
             for (Move move : availableMoves) {
                 game.simulateTurn(move.getButton(), move.getMiniGrid(), maximizingPlayer);
-                BestMove m = minimax(depth - 1, false);
-                if (m.getScore() > maxEval) {
-                    maxEval = m.getScore();
-                    bestMove.setScore(maxEval);
-                    bestMove.setMove(move);
+                List<BestMove> tempBestMoves = minimax(depth - 1, false, alpha, beta);
+                BestMove b = tempBestMoves.get( random.nextInt(tempBestMoves.size()) );
+                if(b.getScore() == maxEval){
+                    bestMoves.add(new BestMove(b.getScore(), move));
+                } else if (b.getScore() > maxEval) {
+                    maxEval = b.getScore();
+                    bestMoves.clear();
+                    bestMoves.add(new BestMove(b.getScore(), move));
                 }
                 game.undoTurn(move.getButton(), move.getMiniGrid());
+                alpha = max(alpha, b.getScore());
+                if(beta <= alpha){
+                    break;
+                }
             }
-            return bestMove;
+            return bestMoves;
         } else {
             int minEval = Integer.MAX_VALUE;
-            List<Move> availableMoves = game.getAvailableMoves();
             for (Move move : availableMoves) {
                 game.simulateTurn(move.getButton(), move.getMiniGrid(), maximizingPlayer);
-                BestMove m = minimax(depth - 1, true);
-                if (m.getScore() < minEval) {
-                    minEval = m.getScore();
-                    bestMove.setScore(minEval);
-                    bestMove.setMove(move);
+                List<BestMove> tempBestMoves = minimax(depth - 1, true, alpha, beta);
+                BestMove b = tempBestMoves.get( random.nextInt(tempBestMoves.size()) );
+                if(b.getScore() == minEval){
+                    bestMoves.add(new BestMove(b.getScore(), move));
+                } else if (b.getScore() < minEval) {
+                    minEval = b.getScore();
+                    bestMoves.clear();
+                    bestMoves.add(new BestMove(b.getScore(), move));
                 }
                 game.undoTurn(move.getButton(), move.getMiniGrid());
+                beta = min(beta, b.getScore());
+                if(beta <= alpha){
+                    break;
+                }
             }
-            return bestMove;
+            return bestMoves;
         }
     }
 
@@ -74,13 +91,13 @@ public class ArtificialIntelligenceEngine {
 
     private int heur1() {
         if(game.isTie() ){
-            game.printUltimateTicTacToeGrid();
+//            game.printUltimateTicTacToeGrid();
             return 0;
         }else if(game.getPlayer1().hasWonGame()){
-            game.printUltimateTicTacToeGrid();
+//            game.printUltimateTicTacToeGrid();
             return 10000;
         }else if(game.getPlayer2().hasWonGame()){
-            game.printUltimateTicTacToeGrid();
+//            game.printUltimateTicTacToeGrid();
             return -10000;
         }else{
 //            game.printUltimateTicTacToeGrid();
