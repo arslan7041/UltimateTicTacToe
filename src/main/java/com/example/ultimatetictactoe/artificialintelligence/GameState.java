@@ -1,6 +1,7 @@
 package com.example.ultimatetictactoe.artificialintelligence;
 
 import com.example.ultimatetictactoe.GameUtils;
+import com.example.ultimatetictactoe.LastMove;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
@@ -8,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -22,12 +24,14 @@ public class GameState {
     private boolean isTie;
     private Set<Node> clickableMiniGrids;
     private GridPane mainGrid;
+    private LastMove lastMove;
     private boolean maximizingPlayer;
 
     public void simulateTurn(Button button, GridPane miniGrid, boolean maximizingPlayer){
         this.maximizingPlayer = maximizingPlayer;
         recordMove(button, miniGrid);
         updateMiniGridIfWonOrTie(miniGrid);
+        lastMove = new LastMove(button, miniGrid, new HashSet<>(clickableMiniGrids));
         clickableMiniGrids.clear();
         boolean isGameOver = isGameOver();
 //        setPlayer1Turn(!isPlayer1Turn());
