@@ -26,10 +26,10 @@ public class ArtificialIntelligenceEngine {
         this.game.setClickableMiniGrids(new HashSet<>(clickableMiniGrids));
         this.game.setMainGrid(mainGrid);
 
-        int depth = 9;
+        int depth = 2;
         minimaxCalls = 0;
         List<BestMove> bestMoves = minimax(depth, false, Integer.MIN_VALUE, Integer.MAX_VALUE);
-        System.out.println("Number of minimax calls: " + minimaxCalls);
+//        System.out.println("Number of minimax calls: " + minimaxCalls);
         return bestMoves.get( random.nextInt(bestMoves.size()) );
     }
 
@@ -45,7 +45,7 @@ public class ArtificialIntelligenceEngine {
         if (maximizingPlayer) { // player1 = maximising player
             int maxEval = Integer.MIN_VALUE;
             for (Move move : availableMoves) {
-                game.simulateTurn(move.getButton(), move.getMiniGrid(), maximizingPlayer);
+                game.simulateTurn(move.getButton(), move.getMiniGrid(), true);
                 List<BestMove> tempBestMoves = minimax(depth - 1, false, alpha, beta);
                 BestMove b = tempBestMoves.get( random.nextInt(tempBestMoves.size()) );
                 if(b.getScore() == maxEval){
@@ -65,7 +65,7 @@ public class ArtificialIntelligenceEngine {
         } else {
             int minEval = Integer.MAX_VALUE;
             for (Move move : availableMoves) {
-                game.simulateTurn(move.getButton(), move.getMiniGrid(), maximizingPlayer);
+                game.simulateTurn(move.getButton(), move.getMiniGrid(), false);
                 List<BestMove> tempBestMoves = minimax(depth - 1, true, alpha, beta);
                 BestMove b = tempBestMoves.get( random.nextInt(tempBestMoves.size()) );
                 if(b.getScore() == minEval){
@@ -93,16 +93,21 @@ public class ArtificialIntelligenceEngine {
         if(game.isTie() ){
 //            game.printUltimateTicTacToeGrid();
             return 0;
-        }else if(game.getPlayer1().hasWonGame()){
+        }
+
+        if(game.getPlayer1().hasWonGame()){
 //            game.printUltimateTicTacToeGrid();
             return 10000;
-        }else if(game.getPlayer2().hasWonGame()){
+        }
+
+        if(game.getPlayer2().hasWonGame()){
 //            game.printUltimateTicTacToeGrid();
             return -10000;
-        }else{
-//            game.printUltimateTicTacToeGrid();
-            return game.getPlayer1().getMiniGridWins() - game.getPlayer2().getMiniGridWins();
         }
+
+//            game.printUltimateTicTacToeGrid();
+        return game.getPlayer1().getMiniGridWins() - game.getPlayer2().getMiniGridWins();
+
     }
 
     private boolean isGameOver(){

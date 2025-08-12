@@ -38,23 +38,15 @@ public class GameState {
         if(!isGameOver){
             updateClickableMiniGrids(button);
         }
-//        printUltimateTicTacToeGrid();
+        printUltimateTicTacToeGrid();
     }
 
     public void undoTurn(Button button, GridPane miniGrid){
         undoMove(button, miniGrid);
         undoMiniGridWonOrTie(miniGrid);
+        undoClickableMiniGridsState();
         undoGameOver();
 //        setPlayer1Turn(!isPlayer1Turn());
-    }
-
-    private void recordMove(Button button, GridPane miniGrid){
-        int i = GridPane.getRowIndex(miniGrid);
-        int j = GridPane.getColumnIndex(miniGrid);
-        int row = GridPane.getRowIndex(button);
-        int col = GridPane.getColumnIndex(button);
-
-        grid[i][j][row][col] = maximizingPlayer ? 1 : 2;
     }
 
     private void undoMove(Button button, GridPane miniGrid) {
@@ -64,13 +56,6 @@ public class GameState {
         int col = GridPane.getColumnIndex(button);
 
         grid[i][j][row][col] = 0;
-    }
-
-    private void updateMiniGridIfWonOrTie(GridPane miniGrid){
-        boolean gridWon = checkMiniGridForWin(miniGrid);
-        if(!gridWon){
-            isGridComplete(miniGrid);
-        }
     }
 
     private void undoMiniGridWonOrTie(GridPane miniGrid) {
@@ -84,6 +69,26 @@ public class GameState {
         }
 
         miniGridWinsBoard[i][j] = 0;
+    }
+
+    private void undoClickableMiniGridsState() {
+        clickableMiniGrids = lastMove.getClickableMiniGrids();
+    }
+
+    private void recordMove(Button button, GridPane miniGrid){
+        int i = GridPane.getRowIndex(miniGrid);
+        int j = GridPane.getColumnIndex(miniGrid);
+        int row = GridPane.getRowIndex(button);
+        int col = GridPane.getColumnIndex(button);
+
+        grid[i][j][row][col] = maximizingPlayer ? 1 : 2;
+    }
+
+    private void updateMiniGridIfWonOrTie(GridPane miniGrid){
+        boolean gridWon = checkMiniGridForWin(miniGrid);
+        if(!gridWon){
+            isGridComplete(miniGrid);
+        }
     }
 
     private boolean checkMiniGridForWin(GridPane miniGrid) {
