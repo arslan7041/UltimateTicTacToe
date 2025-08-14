@@ -26,7 +26,7 @@ public class ArtificialIntelligenceEngine {
         this.game.setClickableMiniGrids(new HashSet<>(clickableMiniGrids));
         this.game.setMainGrid(mainGrid);
 
-        int depth = 2;
+        int depth = 3;
         minimaxCalls = 0;
         List<BestMove> bestMoves = minimax(depth, false, Integer.MIN_VALUE, Integer.MAX_VALUE);
 //        System.out.println("Number of minimax calls: " + minimaxCalls);
@@ -45,8 +45,11 @@ public class ArtificialIntelligenceEngine {
         if (maximizingPlayer) { // player1 = maximising player
             int maxEval = Integer.MIN_VALUE;
             for (Move move : availableMoves) {
+                System.out.println("player 1");
+                System.out.println("Depth = " + depth);
                 game.simulateTurn(move.getButton(), move.getMiniGrid(), true);
                 List<BestMove> tempBestMoves = minimax(depth - 1, false, alpha, beta);
+                game.undoTurn(move.getButton(), move.getMiniGrid());
                 BestMove b = tempBestMoves.get( random.nextInt(tempBestMoves.size()) );
                 if(b.getScore() == maxEval){
                     bestMoves.add(new BestMove(b.getScore(), move));
@@ -55,7 +58,6 @@ public class ArtificialIntelligenceEngine {
                     bestMoves.clear();
                     bestMoves.add(new BestMove(b.getScore(), move));
                 }
-                game.undoTurn(move.getButton(), move.getMiniGrid());
                 alpha = max(alpha, b.getScore());
                 if(beta <= alpha){
                     break;
@@ -65,8 +67,11 @@ public class ArtificialIntelligenceEngine {
         } else {
             int minEval = Integer.MAX_VALUE;
             for (Move move : availableMoves) {
+                System.out.println("player 2");
+                System.out.println("Depth = " + depth);
                 game.simulateTurn(move.getButton(), move.getMiniGrid(), false);
                 List<BestMove> tempBestMoves = minimax(depth - 1, true, alpha, beta);
+                game.undoTurn(move.getButton(), move.getMiniGrid());
                 BestMove b = tempBestMoves.get( random.nextInt(tempBestMoves.size()) );
                 if(b.getScore() == minEval){
                     bestMoves.add(new BestMove(b.getScore(), move));
@@ -75,7 +80,6 @@ public class ArtificialIntelligenceEngine {
                     bestMoves.clear();
                     bestMoves.add(new BestMove(b.getScore(), move));
                 }
-                game.undoTurn(move.getButton(), move.getMiniGrid());
                 beta = min(beta, b.getScore());
                 if(beta <= alpha){
                     break;

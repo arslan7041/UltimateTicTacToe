@@ -31,6 +31,7 @@ public class GameState {
         this.maximizingPlayer = maximizingPlayer;
         recordMove(button, miniGrid);
         updateMiniGridIfWonOrTie(miniGrid);
+        printMiniGrids();
         lastMove = new LastMove(button, miniGrid, new HashSet<>(clickableMiniGrids));
         clickableMiniGrids.clear();
         boolean isGameOver = isGameOver();
@@ -45,6 +46,7 @@ public class GameState {
         undoMove(button, miniGrid);
         undoMiniGridWonOrTie(miniGrid);
         undoClickableMiniGridsState();
+        printMiniGrids();
         undoGameOver();
 //        setPlayer1Turn(!isPlayer1Turn());
     }
@@ -56,6 +58,8 @@ public class GameState {
         int col = GridPane.getColumnIndex(button);
 
         grid[i][j][row][col] = 0;
+
+        System.out.println("Undo Move: (" + row + ", " + col + ")");
     }
 
     private void undoMiniGridWonOrTie(GridPane miniGrid) {
@@ -82,6 +86,8 @@ public class GameState {
         int col = GridPane.getColumnIndex(button);
 
         grid[i][j][row][col] = maximizingPlayer ? 1 : 2;
+
+        System.out.println("Move: (" + row + ", " + col + ")");
     }
 
     private void updateMiniGridIfWonOrTie(GridPane miniGrid){
@@ -235,6 +241,17 @@ public class GameState {
         return availableMoves;
     }
 
+    private void printMiniGrids() {
+        System.out.print("clickable minigrids: ");
+        for(Node node : mainGrid.getChildren()){
+            for(Node miniGrid : clickableMiniGrids){
+                if(node == miniGrid) {
+                    System.out.println("(" + GridPane.getRowIndex(node) + ", " + GridPane.getColumnIndex(node) + ")  ");
+                }
+            }
+        }
+    }
+
     public void printUltimateTicTacToeGrid() {
         for (int i = 0; i < 3; i++) {
             for (int row = 0; row < 3; row++) {
@@ -248,9 +265,6 @@ public class GameState {
             }
             System.out.println();
         }
-
-        System.out.println("Player 1 mini grid wins: " + getPlayer1().getMiniGridWins());
-        System.out.println("Player 2 mini grid wins: " + getPlayer2().getMiniGridWins());
         System.out.println("=================================================");
     }
 }
