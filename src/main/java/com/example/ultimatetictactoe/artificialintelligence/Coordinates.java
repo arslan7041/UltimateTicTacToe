@@ -5,7 +5,7 @@ import lombok.Data;
 
 @AllArgsConstructor
 @Data
-public class MoveCoordinates {
-    private Coordinates miniGridCoordinates;
-    private Coordinates buttonCoordinates;
+public class Coordinates {
+    private int row;
+    private int col;
 }

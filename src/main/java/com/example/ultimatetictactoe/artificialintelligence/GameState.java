@@ -5,6 +5,7 @@ import com.example.ultimatetictactoe.LastMove;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -22,12 +23,10 @@ public class GameState {
     private int[][] miniGridWinsBoard;
     private boolean player1Turn;
     private boolean isTie;
-    private Set<Node> clickableMiniGrids;
-    private GridPane mainGrid;
-    private LastMove lastMove;
+    private Set<Coordinates> clickableMiniGrids;
     private boolean maximizingPlayer;
 
-    public void simulateTurn(Button button, GridPane miniGrid, boolean maximizingPlayer){
+    public void simulateTurn(MoveCoordinates move, boolean maximizingPlayer){
         this.maximizingPlayer = maximizingPlayer;
         recordMove(button, miniGrid);
         updateMiniGridIfWonOrTie(miniGrid);
@@ -222,24 +221,29 @@ public class GameState {
         }
     }
 
-    public List<Move> getAvailableMoves(){
-        List<Move> availableMoves = new ArrayList<>();
-        for(Node miniGridNode : clickableMiniGrids){
-            GridPane miniGrid = (GridPane) miniGridNode;
-            for(Node buttonNode : miniGrid.getChildren()){
-                Button button = (Button) buttonNode;
-                int miniGridX = GridPane.getRowIndex(miniGrid);
-                int miniGridY = GridPane.getColumnIndex(miniGridNode);
-                int buttonX = GridPane.getRowIndex(button);
-                int buttonY = GridPane.getColumnIndex(button);
+    public List<MoveCoordinates> getAvailableMoves(){
+        List<MoveCoordinates> availableMoves = new ArrayList<>();
 
-                if(grid[miniGridX][miniGridY][buttonX][buttonY] == 0){
-                    availableMoves.add(new Move(button, miniGrid));
+        for(Coordinates clickableMiniGrid : clickableMiniGrids){
+            for(int i = 0; i < 3; ++i) {
+                for(int j = 0; j < 3; ++j) {
+                    if(grid[clickableMiniGrid.getRow()][clickableMiniGrid.getCol()][i][j] == 0){
+                        availableMoves.add(new MoveCoordinates(
+                                new Coordinates(clickableMiniGrid.getRow(), clickableMiniGrid.getCol()),
+                                new Coordinates(i, j))
+                        );
+                    }
                 }
             }
         }
         return availableMoves;
     }
+
+    @AllArgsConstructor
+    private static final class Snapshot {
+        private final
+    }
+
 
     private void printMiniGrids() {
         System.out.print("clickable minigrids: ");

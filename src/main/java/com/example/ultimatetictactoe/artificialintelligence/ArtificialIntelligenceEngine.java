@@ -1,5 +1,6 @@
 package com.example.ultimatetictactoe.artificialintelligence;
 
+import com.example.ultimatetictactoe.Player;
 import com.example.ultimatetictactoe.UltimateTicTacToeBackEndGame;
 import javafx.scene.Node;
 import javafx.scene.layout.GridPane;
@@ -14,17 +15,18 @@ import static java.lang.Math.min;
 @RequiredArgsConstructor
 public class ArtificialIntelligenceEngine {
     private GameState game;
-    private final GridPane mainGrid;
     private int minimaxCalls = 0;
     private static final Random random = new Random();
 
     public BestMove getBestAIMove(UltimateTicTacToeBackEndGame game, Set<Node> clickableMiniGrids) {
-        ModelMapper modelMapper = ModelMapperSingleton.getInstance();
-        this.game = modelMapper.map(game, GameState.class);
-        this.game.getPlayer1().hasWonGame(game.getPlayer1().hasWonGame());
-        this.game.getPlayer2().hasWonGame(game.getPlayer2().hasWonGame());
-        this.game.setClickableMiniGrids(new HashSet<>(clickableMiniGrids));
-        this.game.setMainGrid(mainGrid);
+        this.game.setPlayer1( mapPlayer(game.getPlayer1()) );
+        this.game.setPlayer2( mapPlayer(game.getPlayer2()) );
+        this.game.setGrid( mapGrid(game.getGrid()) );
+        this.game.setMiniGridWinsBoard( mapMiniGridWinsBoard(game.getMiniGridWinsBoard()) );
+        this.game.setPlayer1Turn( game.isPlayer1Turn() );
+        this.game.setTie( game.isTie() );
+        this.game.setClickableMiniGrids( mapClickableMiniGrids(clickableMiniGrids) );
+        this.game.setMaximizingPlayer( false );
 
         int depth = 3;
         minimaxCalls = 0;
@@ -33,21 +35,76 @@ public class ArtificialIntelligenceEngine {
         return bestMoves.get( random.nextInt(bestMoves.size()) );
     }
 
+    private Set<Coordinates> mapClickableMiniGrids(Set<Node> clickableMiniGridsSource) {
+        if(clickableMiniGridsSource == null) {
+            return null;
+        }
+
+        Set<Coordinates> clickableMiniGridsDest = new HashSet<>();
+        for(Node miniGrid : clickableMiniGridsSource) {
+            int miniGridRow = GridPane.getRowIndex(miniGrid);
+            int miniGridCol = GridPane.getColumnIndex(miniGrid);
+
+            clickableMiniGridsDest.add( new Coordinates(miniGridRow, miniGridCol) );
+        }
+        return clickableMiniGridsDest;
+    }
+
+    private PlayerState mapPlayer(Player player) {
+        if(player == null) {
+            return null;
+        }
+
+        PlayerState playerState = new PlayerState();
+        playerState.hasWonGame(player.hasWonGame());
+        playerState.setMiniGridWins(player.getMiniGridWins());
+
+        return playerState;
+    }
+
+    private int[][][][] mapGrid(int[][][][] sourceGrid) {
+        if(sourceGrid == null) {
+            return null;
+        }
+
+        int[][][][] dest = new int[3][3][3][3];
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                for (int k = 0; k < 3; k++) {
+                    System.arraycopy(sourceGrid[i][j][k], 0, dest[i][j][k], 0, 3);
+                }
+            }
+        }
+        return dest;
+    }
+
+    private int[][] mapMiniGridWinsBoard(int[][] sourceGrid) {
+        if (sourceGrid == null) return null;
+
+        int[][] dest = new int[3][3];
+        for (int i = 0; i < 3; i++) {
+            System.arraycopy(sourceGrid[i], 0, dest[i], 0, 3);
+        }
+        return dest;
+    }
+
+
+
     private List<BestMove> minimax(int depth, boolean maximizingPlayer, int alpha, int beta) {
         minimaxCalls++;
         if (depth == 0 || isGameOver()) {
             return List.of(new BestMove(evaluate(), null));
         }
 
-        List<Move> availableMoves = game.getAvailableMoves();
+        List<MoveCoordinates> availableMoves = game.getAvailableMoves();
         List<BestMove> bestMoves = new ArrayList<>();
 
         if (maximizingPlayer) { // player1 = maximising player
             int maxEval = Integer.MIN_VALUE;
-            for (Move move : availableMoves) {
+            for (MoveCoordinates move : availableMoves) {
                 System.out.println("player 1");
                 System.out.println("Depth = " + depth);
-                game.simulateTurn(move.getButton(), move.getMiniGrid(), true);
+                game.simulateTurn(move, true);
                 List<BestMove> tempBestMoves = minimax(depth - 1, false, alpha, beta);
                 game.undoTurn(move.getButton(), move.getMiniGrid());
                 BestMove b = tempBestMoves.get(0);
@@ -66,7 +123,7 @@ public class ArtificialIntelligenceEngine {
             return bestMoves;
         } else {
             int minEval = Integer.MAX_VALUE;
-            for (Move move : availableMoves) {
+            for (MoveCoordinates move : availableMoves) {
                 System.out.println("player 2");
                 System.out.println("Depth = " + depth);
                 game.simulateTurn(move.getButton(), move.getMiniGrid(), false);

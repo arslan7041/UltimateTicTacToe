@@ -103,6 +103,8 @@ public class UltimateTicTacToe extends Application {
 
         clearClickableMiniGrids();
         clickableMiniGrids = lastClickableMiniGrids;
+        // this if-condition is to prevent highlighting in-case undo is hit on very first move,
+        // which results in all 9 minigrids becoming clickable once again.
         if(clickableMiniGrids.size() < 9){
             for(Node node : clickableMiniGrids){
                 GameUtils.toggleMiniGridHighlighting((GridPane) node, true);
