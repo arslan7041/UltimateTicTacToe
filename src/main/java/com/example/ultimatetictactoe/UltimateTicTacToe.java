@@ -2,6 +2,7 @@ package com.example.ultimatetictactoe;
 
 import com.example.ultimatetictactoe.artificialintelligence.ArtificialIntelligenceEngine;
 import com.example.ultimatetictactoe.artificialintelligence.BestMove;
+import com.example.ultimatetictactoe.artificialintelligence.Coordinates;
 import com.example.ultimatetictactoe.artificialintelligence.MoveEvent;
 import javafx.animation.FadeTransition;
 import javafx.animation.PauseTransition;
@@ -91,7 +92,7 @@ public class UltimateTicTacToe extends Application {
         primaryStage.setTitle("Ultimate Tic Tac Toe");
         primaryStage.show();
 
-        artificialIntelligenceEngine = new ArtificialIntelligenceEngine(mainGrid);
+        artificialIntelligenceEngine = new ArtificialIntelligenceEngine();
     }
 
     private void handleUndoButtonClick() {
@@ -285,8 +286,19 @@ public class UltimateTicTacToe extends Application {
         pause.setOnFinished(event -> {
             BestMove bestMove = artificialIntelligenceEngine.getBestAIMove(game, clickableMiniGrids);
             if (bestMove.getMove() != null) {
-                bestMove.getMove().getButton().fire();
-                bestMove.getMove().getButton().requestFocus();
+                Coordinates miniGridCoordinates = bestMove.getMove().getMiniGrid();
+                GridPane miniGrid = (GridPane) GameUtils.getNodeGivenParentGridAndIndices(mainGrid, miniGridCoordinates.getRow(), miniGridCoordinates.getCol());
+
+                Coordinates buttonCoordinates = bestMove.getMove().getButton();
+                Button button = null;
+                if(miniGrid != null) {
+                    button = (Button) GameUtils.getNodeGivenParentGridAndIndices(miniGrid, buttonCoordinates.getRow(), miniGridCoordinates.getCol());
+                }
+
+                if(button != null) {
+                    button.fire();
+                    button.requestFocus();
+                }
             }
         });
         pause.play();
@@ -358,9 +370,9 @@ public class UltimateTicTacToe extends Application {
     private void updateClickableMiniGrids(Button button) {
         int buttonX = GridPane.getRowIndex(button);
         int buttonY = GridPane.getColumnIndex(button);
-        GridPane nextMiniGrid = GameUtils.getGridPaneGivenIndices(mainGrid, buttonX, buttonY);
+        GridPane nextMiniGrid = (GridPane) GameUtils.getNodeGivenParentGridAndIndices(mainGrid, buttonX, buttonY);
 
-        if(!nextMiniGrid.isDisabled()){
+        if(nextMiniGrid != null && !nextMiniGrid.isDisabled()){
             GameUtils.toggleMiniGridHighlighting(nextMiniGrid, true);
             clickableMiniGrids.add(nextMiniGrid);
         }else{

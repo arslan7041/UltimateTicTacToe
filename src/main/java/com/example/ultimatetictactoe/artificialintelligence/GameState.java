@@ -1,18 +1,12 @@
 package com.example.ultimatetictactoe.artificialintelligence;
 
-import com.example.ultimatetictactoe.GameUtils;
-import com.example.ultimatetictactoe.LastMove;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Data
 @NoArgsConstructor
@@ -21,33 +15,46 @@ public class GameState {
     private PlayerState player2;
     private int[][][][] grid;
     private int[][] miniGridWinsBoard;
-    private boolean player1Turn;
     private boolean isTie;
     private Set<Coordinates> clickableMiniGrids;
     private boolean maximizingPlayer;
+    private final Deque<Snapshot> snapshotStack = new ArrayDeque<>();
 
-    public void simulateTurn(MoveCoordinates move, boolean maximizingPlayer){
+    public void simulateTurn(Move move, boolean maximizingPlayer){
+        Snapshot snapshot = new Snapshot(
+                player1,
+                player2,
+                grid,
+                miniGridWinsBoard,
+                isTie,
+                new HashSet<>(clickableMiniGrids),
+                maximizingPlayer
+        );
+        snapshotStack.push(snapshot);
+
         this.maximizingPlayer = maximizingPlayer;
-        recordMove(button, miniGrid);
-        updateMiniGridIfWonOrTie(miniGrid);
-        printMiniGrids();
-        lastMove = new LastMove(button, miniGrid, new HashSet<>(clickableMiniGrids));
+        recordMove(move.getMiniGrid(), move.getButton());
+        updateMiniGridIfWonOrTie(move.getMiniGrid());
         clickableMiniGrids.clear();
-        boolean isGameOver = isGameOver();
-//        setPlayer1Turn(!isPlayer1Turn());
-        if(!isGameOver){
-            updateClickableMiniGrids(button);
+        if(!isGameOver()){
+            updateClickableMiniGrids(move.getButton());
         }
         printUltimateTicTacToeGrid();
     }
 
-    public void undoTurn(Button button, GridPane miniGrid){
-        undoMove(button, miniGrid);
-        undoMiniGridWonOrTie(miniGrid);
-        undoClickableMiniGridsState();
-        printMiniGrids();
-        undoGameOver();
-//        setPlayer1Turn(!isPlayer1Turn());
+    public void undoTurn(){
+        Snapshot snapshot = snapshotStack.pop();
+        player1 = snapshot.player1;
+        player2 = snapshot.player2;
+        grid = snapshot.grid;
+        miniGridWinsBoard = snapshot.miniGridWinsBoard;
+        isTie = snapshot.isTie;
+        clickableMiniGrids = snapshot.clickableMiniGrids;
+        maximizingPlayer = snapshot.maximizingPlayer;
+//        undoMove(move, miniGrid);
+//        undoMiniGridWonOrTie(miniGrid);
+//        undoClickableMiniGridsState();
+//        undoGameOver();
     }
 
     private void undoMove(Button button, GridPane miniGrid) {
@@ -74,31 +81,20 @@ public class GameState {
         miniGridWinsBoard[i][j] = 0;
     }
 
-    private void undoClickableMiniGridsState() {
-        clickableMiniGrids = lastMove.getClickableMiniGrids();
+    private void recordMove(Coordinates miniGrid, Coordinates button){
+        grid[miniGrid.getRow()][miniGrid.getCol()][button.getRow()][button.getCol()] = maximizingPlayer ? 1 : 2;
     }
 
-    private void recordMove(Button button, GridPane miniGrid){
-        int i = GridPane.getRowIndex(miniGrid);
-        int j = GridPane.getColumnIndex(miniGrid);
-        int row = GridPane.getRowIndex(button);
-        int col = GridPane.getColumnIndex(button);
-
-        grid[i][j][row][col] = maximizingPlayer ? 1 : 2;
-
-        System.out.println("Move: (" + row + ", " + col + ")");
-    }
-
-    private void updateMiniGridIfWonOrTie(GridPane miniGrid){
+    private void updateMiniGridIfWonOrTie(Coordinates miniGrid){
         boolean gridWon = checkMiniGridForWin(miniGrid);
         if(!gridWon){
             isGridComplete(miniGrid);
         }
     }
 
-    private boolean checkMiniGridForWin(GridPane miniGrid) {
-        int i = GridPane.getRowIndex(miniGrid);
-        int j = GridPane.getColumnIndex(miniGrid);
+    private boolean checkMiniGridForWin(Coordinates miniGrid) {
+        int i = miniGrid.getRow();
+        int j = miniGrid.getCol();
 
         if (foundWinningRowsColumnsDiagonals(grid[i][j])) {
             if (maximizingPlayer) {
@@ -113,9 +109,9 @@ public class GameState {
         return false;
     }
 
-    private boolean isGridComplete(GridPane miniGrid){
-        int i = GridPane.getRowIndex(miniGrid);
-        int j = GridPane.getColumnIndex(miniGrid);
+    private boolean isGridComplete(Coordinates miniGrid){
+        int i = miniGrid.getRow();
+        int j = miniGrid.getCol();
 
         if(isGridComplete(this.grid[i][j])){
             miniGridWinsBoard[i][j] = -1;
@@ -203,32 +199,31 @@ public class GameState {
         player2.hasWonGame(false);
     }
 
-    private void updateClickableMiniGrids(Button button) {
-        int buttonX = GridPane.getRowIndex(button);
-        int buttonY = GridPane.getColumnIndex(button);
+    private void updateClickableMiniGrids(Coordinates button) {
+        int buttonRow = button.getRow();
+        int buttonCol = button.getCol();
 
-        if(miniGridWinsBoard[buttonX][buttonY] == 0) { // if minigrid not won or tie (i.e. not disabled)
-            GridPane nextMiniGrid = GameUtils.getGridPaneGivenIndices(mainGrid, buttonX, buttonY);
-            clickableMiniGrids.add(nextMiniGrid);
+        if(miniGridWinsBoard[buttonRow][buttonCol] == 0) { // if minigrid not won or tie (i.e. not disabled)
+            clickableMiniGrids.add(new Coordinates(buttonRow, buttonCol));
         }else{
             for(int i = 0; i < miniGridWinsBoard.length; i++){
                 for(int j = 0; j < miniGridWinsBoard[i].length; j++){
                     if(miniGridWinsBoard[i][j] == 0){
-                        clickableMiniGrids.add(GameUtils.getGridPaneGivenIndices(mainGrid, i, j));
+                        clickableMiniGrids.add(new Coordinates(i, j));
                     }
                 }
             }
         }
     }
 
-    public List<MoveCoordinates> getAvailableMoves(){
-        List<MoveCoordinates> availableMoves = new ArrayList<>();
+    public List<Move> getAvailableMoves(){
+        List<Move> availableMoves = new ArrayList<>();
 
         for(Coordinates clickableMiniGrid : clickableMiniGrids){
             for(int i = 0; i < 3; ++i) {
                 for(int j = 0; j < 3; ++j) {
                     if(grid[clickableMiniGrid.getRow()][clickableMiniGrid.getCol()][i][j] == 0){
-                        availableMoves.add(new MoveCoordinates(
+                        availableMoves.add(new Move(
                                 new Coordinates(clickableMiniGrid.getRow(), clickableMiniGrid.getCol()),
                                 new Coordinates(i, j))
                         );
@@ -241,19 +236,13 @@ public class GameState {
 
     @AllArgsConstructor
     private static final class Snapshot {
-        private final
-    }
-
-
-    private void printMiniGrids() {
-        System.out.print("clickable minigrids: ");
-        for(Node node : mainGrid.getChildren()){
-            for(Node miniGrid : clickableMiniGrids){
-                if(node == miniGrid) {
-                    System.out.println("(" + GridPane.getRowIndex(node) + ", " + GridPane.getColumnIndex(node) + ")  ");
-                }
-            }
-        }
+        private PlayerState player1;
+        private PlayerState player2;
+        private int[][][][] grid;
+        private int[][] miniGridWinsBoard;
+        private boolean isTie;
+        private Set<Coordinates> clickableMiniGrids;
+        private boolean maximizingPlayer;
     }
 
     public void printUltimateTicTacToeGrid() {
