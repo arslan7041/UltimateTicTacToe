@@ -50,7 +50,7 @@ public class ArtificialIntelligenceEngine {
                 game.simulateTurn(move.getButton(), move.getMiniGrid(), true);
                 List<BestMove> tempBestMoves = minimax(depth - 1, false, alpha, beta);
                 game.undoTurn(move.getButton(), move.getMiniGrid());
-                BestMove b = tempBestMoves.get( random.nextInt(tempBestMoves.size()) );
+                BestMove b = tempBestMoves.get(0);
                 if(b.getScore() == maxEval){
                     bestMoves.add(new BestMove(b.getScore(), move));
                 } else if (b.getScore() > maxEval) {
@@ -72,7 +72,7 @@ public class ArtificialIntelligenceEngine {
                 game.simulateTurn(move.getButton(), move.getMiniGrid(), false);
                 List<BestMove> tempBestMoves = minimax(depth - 1, true, alpha, beta);
                 game.undoTurn(move.getButton(), move.getMiniGrid());
-                BestMove b = tempBestMoves.get( random.nextInt(tempBestMoves.size()) );
+                BestMove b = tempBestMoves.get(0);
                 if(b.getScore() == minEval){
                     bestMoves.add(new BestMove(b.getScore(), move));
                 } else if (b.getScore() < minEval) {
