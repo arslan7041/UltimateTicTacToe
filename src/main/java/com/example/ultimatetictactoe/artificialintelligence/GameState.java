@@ -2,7 +2,6 @@ package com.example.ultimatetictactoe.artificialintelligence;
 
 import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -27,7 +26,7 @@ public class GameState {
                 grid,
                 miniGridWinsBoard,
                 isTie,
-                new HashSet<>(clickableMiniGrids),
+                clickableMiniGrids,
                 maximizingPlayer
         );
         snapshotStack.push(snapshot);
@@ -234,15 +233,61 @@ public class GameState {
         return availableMoves;
     }
 
-    @AllArgsConstructor
     private static final class Snapshot {
-        private PlayerState player1;
-        private PlayerState player2;
-        private int[][][][] grid;
-        private int[][] miniGridWinsBoard;
-        private boolean isTie;
-        private Set<Coordinates> clickableMiniGrids;
-        private boolean maximizingPlayer;
+        private final PlayerState player1;
+        private final PlayerState player2;
+        private final int[][][][] grid;
+        private final int[][] miniGridWinsBoard;
+        private final boolean isTie;
+        private final Set<Coordinates> clickableMiniGrids;
+        private final boolean maximizingPlayer;
+
+        private Snapshot(
+                PlayerState player1,
+                PlayerState player2,
+                int[][][][] grid,
+                int[][] miniGridWinsBoard,
+                boolean isTie,
+                Set<Coordinates> clickableMiniGrids,
+                boolean maximizingPlayer
+        ) {
+            this.player1 = clonePlayer(player1);
+            this.player2 = clonePlayer(player2);
+            this.grid = cloneGrid(grid);
+            this.miniGridWinsBoard = cloneMiniGridWinsBoard(miniGridWinsBoard);
+            this.isTie = isTie;
+            this.clickableMiniGrids = new HashSet<>(clickableMiniGrids);
+            this.maximizingPlayer = maximizingPlayer;
+        }
+    }
+
+    private static PlayerState clonePlayer(PlayerState player) {
+        PlayerState clone = new PlayerState();
+        clone.setMiniGridWins(player.getMiniGridWins());
+        clone.hasWonGame(player.hasWonGame());
+        return clone;
+    }
+
+    private static int[][][][] cloneGrid(int[][][][] grid) {
+        int[][][][] copy = new int[3][3][3][3];
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                for (int row = 0; row < 3; row++) {
+                    for (int col = 0; col < 3; col++) {
+                        copy[i][j][row][col] = grid[i][j][row][col];
+                    }
+                }
+            }
+        }
+        return copy;
+    }
+
+    private static int[][] cloneMiniGridWinsBoard(int[][] board) {
+        int[][] copy = new int[3][3];
+        for (int i = 0; i < 3; i++) {
+            System.arraycopy(board[i], 0, copy[i], 0, 3);
+        }
+        return copy;
     }
 
     public void printUltimateTicTacToeGrid() {
