@@ -16,6 +16,7 @@ public class ArtificialIntelligenceEngine {
     private static final Random random = new Random();
 
     public BestMove getBestAIMove(UltimateTicTacToeBackEndGame game, Set<Node> clickableMiniGrids) {
+        this.game = new GameState();
         this.game.setPlayer1( mapPlayer(game.getPlayer1()) );
         this.game.setPlayer2( mapPlayer(game.getPlayer2()) );
         this.game.setGrid( mapGrid(game.getGrid()) );
