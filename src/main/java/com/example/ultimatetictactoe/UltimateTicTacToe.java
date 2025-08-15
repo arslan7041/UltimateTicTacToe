@@ -292,7 +292,7 @@ public class UltimateTicTacToe extends Application {
                 Coordinates buttonCoordinates = bestMove.getMove().getButton();
                 Button button = null;
                 if(miniGrid != null) {
-                    button = (Button) GameUtils.getNodeGivenParentGridAndIndices(miniGrid, buttonCoordinates.getRow(), miniGridCoordinates.getCol());
+                    button = (Button) GameUtils.getNodeGivenParentGridAndIndices(miniGrid, buttonCoordinates.getRow(), buttonCoordinates.getCol());
                 }
 
                 if(button != null) {
