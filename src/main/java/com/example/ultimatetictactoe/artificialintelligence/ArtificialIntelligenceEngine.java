@@ -148,24 +148,130 @@ public class ArtificialIntelligenceEngine {
     }
 
     private int heur1() {
-        if(game.isTie() ){
-//            game.printUltimateTicTacToeGrid();
+        if (game.isTie()) {
             return 0;
         }
 
-        if(game.getPlayer1().hasWonGame()){
-//            game.printUltimateTicTacToeGrid();
+        if (game.getPlayer1().hasWonGame()) {
             return 10000;
         }
 
-        if(game.getPlayer2().hasWonGame()){
-//            game.printUltimateTicTacToeGrid();
+        if (game.getPlayer2().hasWonGame()) {
             return -10000;
         }
 
-//            game.printUltimateTicTacToeGrid();
-        return game.getPlayer1().getMiniGridWins() - game.getPlayer2().getMiniGridWins();
+        int score = 0;
 
+        // mini‑grid win difference
+        score += (game.getPlayer1().getMiniGridWins() - game.getPlayer2().getMiniGridWins()) * 100;
+
+        // centre mini‑grid control on the main board
+        if (game.getMiniGridWinsBoard()[1][1] == 1) {
+            score += 50;
+        } else if (game.getMiniGridWinsBoard()[1][1] == 2) {
+            score -= 50;
+        }
+
+        // two in a row and fork potential on the main board
+        score += evaluateLines(game.getMiniGridWinsBoard(), 100);
+
+        // evaluate each mini‑grid that is still playable
+        int[][][][] grid = game.getGrid();
+        int[][] miniGridWins = game.getMiniGridWinsBoard();
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (miniGridWins[i][j] == 0) {
+                    score += evaluateMiniGrid(grid[i][j]);
+                }
+            }
+        }
+
+        // ability to play anywhere next turn
+        if (game.getClickableMiniGrids() != null && game.getClickableMiniGrids().size() > 1) {
+            // if it is player1's turn (maximizingPlayer == false), a free move is good
+            if (!game.isMaximizingPlayer()) {
+                score += 15;
+            } else {
+                score -= 15;
+            }
+        }
+
+        return score;
+    }
+
+    private int evaluateMiniGrid(int[][] miniGrid) {
+        int score = 0;
+
+        // centre control inside the mini‑grid
+        if (miniGrid[1][1] == 1) {
+            score += 3;
+        } else if (miniGrid[1][1] == 2) {
+            score -= 3;
+        }
+
+        // corners encourage multiple winning possibilities
+        int[] corners = {miniGrid[0][0], miniGrid[0][2], miniGrid[2][0], miniGrid[2][2]};
+        for (int val : corners) {
+            if (val == 1) {
+                score += 1;
+            } else if (val == 2) {
+                score -= 1;
+            }
+        }
+
+        // two in a row and potential forks within the mini‑grid
+        score += evaluateLines(miniGrid, 10);
+
+        return score;
+    }
+
+    private int evaluateLines(int[][] board, int weight) {
+        int score = 0;
+
+        // rows and columns
+        for (int i = 0; i < 3; i++) {
+            score += evaluateLine(board[i][0], board[i][1], board[i][2], weight);
+            score += evaluateLine(board[0][i], board[1][i], board[2][i], weight);
+        }
+
+        // diagonals
+        score += evaluateLine(board[0][0], board[1][1], board[2][2], weight);
+        score += evaluateLine(board[0][2], board[1][1], board[2][0], weight);
+
+        return score;
+    }
+
+    private int evaluateLine(int a, int b, int c, int weight) {
+        int[] vals = {a, b, c};
+        int p1 = 0;
+        int p2 = 0;
+        int empty = 0;
+        for (int v : vals) {
+            if (v == 1) {
+                p1++;
+            } else if (v == 2) {
+                p2++;
+            } else if (v == 0) {
+                empty++;
+            } else {
+                // -1 means the line is blocked
+                return 0;
+            }
+        }
+
+        if (p1 == 2 && empty == 1) {
+            return weight;
+        }
+        if (p2 == 2 && empty == 1) {
+            return -weight;
+        }
+        if (p1 == 1 && empty == 2) {
+            return weight / 3;
+        }
+        if (p2 == 1 && empty == 2) {
+            return -weight / 3;
+        }
+        return 0;
     }
 
     private boolean isGameOver(){
