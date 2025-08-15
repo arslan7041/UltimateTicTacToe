@@ -26,11 +26,32 @@ public class ArtificialIntelligenceEngine {
         this.game.setClickableMiniGrids( mapClickableMiniGrids(clickableMiniGrids) );
         this.game.setMaximizingPlayer( false );
 
-        maxDepth = 3;
+        maxDepth = 9;
         minimaxCalls = 0;
         List<BestMove> bestMoves = minimax(0, false, Integer.MIN_VALUE, Integer.MAX_VALUE);
 //        System.out.println("Number of minimax calls: " + minimaxCalls);
-        return bestMoves.get( random.nextInt(bestMoves.size()) );
+        List<BestMove> immediateWins = new ArrayList<>();
+        for (BestMove bestMove : bestMoves) {
+            if (bestMove.getMove() != null) {
+                this.game.simulateTurn(bestMove.getMove(), this.game.isMaximizingPlayer());
+                boolean won;
+                if (this.game.isMaximizingPlayer()) {
+                    won = this.game.getPlayer1().hasWonGame();
+                } else {
+                    won = this.game.getPlayer2().hasWonGame();
+                }
+                this.game.undoTurn();
+                if (won) {
+                    immediateWins.add(bestMove);
+                }
+            }
+        }
+
+        if (!immediateWins.isEmpty()) {
+            return immediateWins.get(random.nextInt(immediateWins.size()));
+        }
+
+        return bestMoves.get(random.nextInt(bestMoves.size()));
     }
 
     private Set<Coordinates> mapClickableMiniGrids(Set<Node> clickableMiniGridsSource) {
