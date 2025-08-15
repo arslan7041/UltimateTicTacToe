@@ -38,7 +38,7 @@ public class GameState {
         if(!isGameOver()){
             updateClickableMiniGrids(move.getButton());
         }
-        printUltimateTicTacToeGrid();
+//        printUltimateTicTacToeGrid();
     }
 
     public void undoTurn(){
@@ -50,10 +50,6 @@ public class GameState {
         isTie = snapshot.isTie;
         clickableMiniGrids = snapshot.clickableMiniGrids;
         maximizingPlayer = snapshot.maximizingPlayer;
-//        undoMove(move, miniGrid);
-//        undoMiniGridWonOrTie(miniGrid);
-//        undoClickableMiniGridsState();
-//        undoGameOver();
     }
 
     private void undoMove(Button button, GridPane miniGrid) {

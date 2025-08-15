@@ -100,8 +100,6 @@ public class ArtificialIntelligenceEngine {
         if (maximizingPlayer) { // player1 = maximising player
             int maxEval = Integer.MIN_VALUE;
             for (Move move : availableMoves) {
-                System.out.println("player 1");
-                System.out.println("Depth = " + depth);
                 game.simulateTurn(move, true);
                 List<BestMove> tempBestMoves = minimax(depth + 1, false, alpha, beta);
                 game.undoTurn();
@@ -122,8 +120,6 @@ public class ArtificialIntelligenceEngine {
         } else {
             int minEval = Integer.MAX_VALUE;
             for (Move move : availableMoves) {
-                System.out.println("player 2");
-                System.out.println("Depth = " + depth);
                 game.simulateTurn(move, false);
                 List<BestMove> tempBestMoves = minimax(depth + 1, true, alpha, beta);
                 game.undoTurn();
