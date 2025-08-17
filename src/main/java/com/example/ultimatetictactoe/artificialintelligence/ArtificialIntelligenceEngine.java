@@ -193,6 +193,9 @@ public class ArtificialIntelligenceEngine {
         // two in a row and fork potential on the main board
         score += evaluateLines(game.getMiniGridWinsBoard(), 100);
 
+        // additional heuristic – look for fork opportunities on the main board
+        score += evaluateForks(game.getMiniGridWinsBoard(), 50);
+
         // evaluate each mini‑grid that is still playable
         int[][][][] grid = game.getGrid();
         int[][] miniGridWins = game.getMiniGridWinsBoard();
@@ -213,6 +216,9 @@ public class ArtificialIntelligenceEngine {
                 score -= 15;
             }
         }
+
+        // penalise sending the opponent to a favourable mini‑grid
+        score -= evaluateForcedMiniGridThreat();
 
         return score;
     }
@@ -239,6 +245,7 @@ public class ArtificialIntelligenceEngine {
 
         // two in a row and potential forks within the mini‑grid
         score += evaluateLines(miniGrid, 10);
+        score += evaluateForks(miniGrid, 5);
 
         return score;
     }
@@ -259,6 +266,48 @@ public class ArtificialIntelligenceEngine {
         return score;
     }
 
+    private int evaluateForks(int[][] board, int weight) {
+        int score = 0;
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (board[i][j] == 0) {
+                    int p1 = countOpenLines(board, i, j, 1);
+                    int p2 = countOpenLines(board, i, j, 2);
+                    if (p1 >= 2) {
+                        score += weight;
+                    }
+                    if (p2 >= 2) {
+                        score -= weight;
+                    }
+                }
+            }
+        }
+        return score;
+    }
+
+    private int countOpenLines(int[][] board, int row, int col, int player) {
+        int lines = 0;
+        if (linePotential(board[row][0], board[row][1], board[row][2], player)) lines++;
+        if (linePotential(board[0][col], board[1][col], board[2][col], player)) lines++;
+        if (row == col && linePotential(board[0][0], board[1][1], board[2][2], player)) lines++;
+        if (row + col == 2 && linePotential(board[0][2], board[1][1], board[2][0], player)) lines++;
+        return lines;
+    }
+
+    private boolean linePotential(int a, int b, int c, int player) {
+        int playerCount = 0;
+        int opponentCount = 0;
+        int[] vals = {a, b, c};
+        for (int v : vals) {
+            if (v == player) {
+                playerCount++;
+            } else if (v != 0 && v != -1) {
+                opponentCount++;
+            }
+        }
+        return opponentCount == 0 && playerCount > 0;
+    }
+
     private int evaluateLine(int a, int b, int c, int weight) {
         int[] vals = {a, b, c};
         int p1 = 0;
@@ -277,17 +326,83 @@ public class ArtificialIntelligenceEngine {
             }
         }
 
+        if (p1 == 3) {
+            return weight * 3;
+        }
+        if (p2 == 3) {
+            return -weight * 3;
+        }
+        if (a == 1 && c == 1 && b == 0) {
+            return weight * 2;
+        }
+        if (a == 2 && c == 2 && b == 0) {
+            return -weight * 2;
+        }
         if (p1 == 2 && empty == 1) {
             return weight;
         }
         if (p2 == 2 && empty == 1) {
-            return -weight;
+            return -weight * 2;
         }
         if (p1 == 1 && empty == 2) {
             return weight / 3;
         }
         if (p2 == 1 && empty == 2) {
             return -weight / 3;
+        }
+        return 0;
+    }
+
+    private int evaluateForcedMiniGridThreat() {
+        if (game.getClickableMiniGrids() == null || game.getClickableMiniGrids().size() != 1) {
+            return 0;
+        }
+        Coordinates forced = game.getClickableMiniGrids().iterator().next();
+        int nextPlayer = game.isMaximizingPlayer() ? 2 : 1;
+        int[][] miniGrid = game.getGrid()[forced.getRow()][forced.getCol()];
+        int threat = evaluateThreatLines(miniGrid, nextPlayer, 20);
+
+        int[][] board = game.getMiniGridWinsBoard();
+        if (board[forced.getRow()][forced.getCol()] == 0) {
+            board[forced.getRow()][forced.getCol()] = nextPlayer;
+            threat += evaluateThreatLines(board, nextPlayer, 50);
+            board[forced.getRow()][forced.getCol()] = 0;
+        }
+        return threat;
+    }
+
+    private int evaluateThreatLines(int[][] board, int player, int weight) {
+        int threat = 0;
+        for (int i = 0; i < 3; i++) {
+            threat += evaluateThreatLine(board[i][0], board[i][1], board[i][2], player, weight);
+            threat += evaluateThreatLine(board[0][i], board[1][i], board[2][i], player, weight);
+        }
+        threat += evaluateThreatLine(board[0][0], board[1][1], board[2][2], player, weight);
+        threat += evaluateThreatLine(board[0][2], board[1][1], board[2][0], player, weight);
+        return threat;
+    }
+
+    private int evaluateThreatLine(int a, int b, int c, int player, int weight) {
+        int playerCount = 0;
+        int empty = 0;
+        int[] vals = {a, b, c};
+        for (int v : vals) {
+            if (v == player) {
+                playerCount++;
+            } else if (v == 0) {
+                empty++;
+            } else if (v == -1) {
+                return 0;
+            }
+        }
+        if (playerCount == 3) {
+            return weight * 3;
+        }
+        if (playerCount == 2 && empty == 1) {
+            if (a == player && c == player && b == 0) {
+                return weight * 2;
+            }
+            return weight;
         }
         return 0;
     }
