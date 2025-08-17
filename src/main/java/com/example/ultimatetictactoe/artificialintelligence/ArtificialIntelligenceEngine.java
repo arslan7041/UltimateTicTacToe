@@ -30,26 +30,21 @@ public class ArtificialIntelligenceEngine {
         minimaxCalls = 0;
         List<BestMove> bestMoves = minimax(0, false, Integer.MIN_VALUE, Integer.MAX_VALUE);
 //        System.out.println("Number of minimax calls: " + minimaxCalls);
-        List<BestMove> immediateWins = new ArrayList<>();
-        for (BestMove bestMove : bestMoves) {
-            if (bestMove.getMove() != null) {
-                this.game.simulateTurn(bestMove.getMove(), this.game.isMaximizingPlayer());
-                boolean won;
-                if (this.game.isMaximizingPlayer()) {
-                    won = this.game.getPlayer1().hasWonGame();
-                } else {
-                    won = this.game.getPlayer2().hasWonGame();
-                }
-                this.game.undoTurn();
-                if (won) {
-                    immediateWins.add(bestMove);
-                }
-            }
-        }
-
-        if (!immediateWins.isEmpty()) {
-            return immediateWins.get(random.nextInt(immediateWins.size()));
-        }
+//        List<BestMove> immediateWins = new ArrayList<>();
+//        for (BestMove bestMove : bestMoves) {
+//            if (bestMove.getMove() != null) {
+//                this.game.simulateTurn(bestMove.getMove(), false);
+//                boolean won = this.game.getPlayer2().hasWonGame();
+//                this.game.undoTurn();
+//                if (won) {
+//                    immediateWins.add(bestMove);
+//                }
+//            }
+//        }
+//
+//        if (!immediateWins.isEmpty()) {
+//            return immediateWins.get(random.nextInt(immediateWins.size()));
+//        }
 
         return bestMoves.get(random.nextInt(bestMoves.size()));
     }
@@ -205,14 +200,14 @@ public class ArtificialIntelligenceEngine {
         }
 
         // ability to play anywhere next turn
-        if (game.getClickableMiniGrids() != null && game.getClickableMiniGrids().size() > 1) {
-            // if it is player1's turn (maximizingPlayer == false), a free move is good
-            if (!game.isMaximizingPlayer()) {
-                score += 15;
-            } else {
-                score -= 15;
-            }
-        }
+//        if (game.getClickableMiniGrids() != null && game.getClickableMiniGrids().size() > 1) {
+//            // if it is player1's turn (maximizingPlayer == false), a free move is good
+//            if (!game.isMaximizingPlayer()) {
+//                score += 15;
+//            } else {
+//                score -= 15;
+//            }
+//        }
 
         return score;
     }
