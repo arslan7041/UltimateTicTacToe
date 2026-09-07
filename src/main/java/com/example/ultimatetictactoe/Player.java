@@ -1,13 +1,20 @@
 package com.example.ultimatetictactoe;
 
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import lombok.Data;
+import lombok.experimental.Accessors;
+
+@Data
 public class Player {
     private final int id;
     private final String labelValue;
     private final String labelColor;
     private final int labelSize;
+    private int miniGridWins;
+    @Accessors(fluent = true, chain = false)
+    private boolean hasWonGame;
 
-    public int wins = 0;
-    public boolean wonGame = false;
     public int undos = 1;
 
     public Player(int id, String label, String color, int size) {
@@ -15,27 +22,28 @@ public class Player {
         this.labelValue = label;
         this.labelColor = color;
         this.labelSize = size;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public String getLabelValue() {
-        return labelValue;
-    }
-
-    public String getLabelColor() {
-        return labelColor;
-    }
-
-    public int getLabelSize() {
-        return labelSize;
+        this.miniGridWins = 0;
+        this.hasWonGame = false;
     }
 
     public void resetPlayer(){
-        wins = 0;
-        wonGame = false;
-        undos = 1;
+        this.miniGridWins = 0;
+        this.hasWonGame = false;
+        this.undos = 1;
+    }
+
+    public void makeMove(Button button){
+        Label buttonLabel = new Label();
+        buttonLabel.setText(this.getLabelValue());
+        buttonLabel.setStyle(String.format("-fx-text-fill: %s; -fx-font-weight: bold; -fx-font-size: %dem;", this.getLabelColor(), this.getLabelSize()));
+        button.setGraphic(buttonLabel);
+    }
+
+    public void incrementMiniGridWins(){
+        miniGridWins++;
+    }
+
+    public void decrementMiniGridWins(){
+        miniGridWins--;
     }
 }

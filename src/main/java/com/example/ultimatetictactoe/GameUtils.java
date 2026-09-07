@@ -26,7 +26,6 @@ import java.util.List;
 import static com.example.ultimatetictactoe.Constants.*;
 
 public class GameUtils {
-
     private static final int cellSize = CELL_BUTTON_SIZE;
 
     private static DropShadow glowEffect;
@@ -106,15 +105,22 @@ public class GameUtils {
         return (GridPane) parent;
     }
 
-    public static GridPane getGridPaneGivenIndices(GridPane mainGrid, int row, int col) {
-        return (GridPane) mainGrid.getChildren().get(col * 3 + row);
+    public static Node getNodeGivenParentGridAndIndices(GridPane grid, int row, int col) {
+        for (Node n : grid.getChildren()) {
+            int r = GridPane.getRowIndex(n);
+            int c = GridPane.getColumnIndex(n);
+            if (r == row && c == col) {
+                return n;
+            }
+        }
+        return null;
     }
 
     public static void setWinningMiniGrids(GridPane mainGrid, List<WinningTriple> winningCoordinates){
         winningMiniGrids.clear();
         for (WinningTriple winningTriple : winningCoordinates) {
             for(WinningTriple.Coordinate coordinate: winningTriple.getCoordinates()){
-                GridPane miniGrid = getGridPaneGivenIndices(mainGrid, coordinate.getX(), coordinate.getY());
+                GridPane miniGrid = (GridPane) getNodeGivenParentGridAndIndices(mainGrid, coordinate.getX(), coordinate.getY());
                 winningMiniGrids.add(miniGrid);
             }
         }

@@ -2,39 +2,42 @@ package com.example.ultimatetictactoe;
 
 import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
+import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.example.ultimatetictactoe.Constants.*;
 
+@Data
 public class UltimateTicTacToeBackEndGame {
     private final Player player1;
     private final Player player2;
-    public boolean player1Turn = true;
-    public boolean isTie = false;
-
     private int[][][][] grid;
     private int[][] miniGridWinsBoard;
     private List<WinningTriple> lastWinningCoordinates;
-
+    private boolean player1Turn;
+    private boolean isTie;
 
     public UltimateTicTacToeBackEndGame() {
+        player1 = new Player(1, PLAYER1_LABEL, PLAYER1_LABEL_COLOR, PLAYER1_LABEL_SIZE);
+        player2 = new Player(2, PLAYER2_LABEL, PLAYER2_LABEL_COLOR, PLAYER2_LABEL_SIZE);
         grid = new int[3][3][3][3];
         miniGridWinsBoard = new int[3][3];
         lastWinningCoordinates =  new ArrayList<>();
-        player1 = new Player(1, PLAYER1_LABEL, PLAYER1_LABEL_COLOR, PLAYER1_LABEL_SIZE);
-        player2 = new Player(2, PLAYER2_LABEL, PLAYER2_LABEL_COLOR, PLAYER2_LABEL_SIZE);
+        player1Turn = true;
+        isTie = false;
+
     }
 
     public void resetBackEndGame(){
+        player1.resetPlayer();
+        player2.resetPlayer();
         grid = new int[3][3][3][3];
         miniGridWinsBoard = new int[3][3];
         lastWinningCoordinates = new ArrayList<>();
-        isTie = false;
-        player1.resetPlayer();
-        player2.resetPlayer();
         player1Turn = true;
+        isTie = false;
     }
 
     public void recordMove(Button button, GridPane miniGrid){
@@ -52,10 +55,10 @@ public class UltimateTicTacToeBackEndGame {
 
         if (foundWinningRowsColumnsDiagonals(grid[i][j])) {
             if (player1Turn) {
-                player1.wins++;
+                player1.incrementMiniGridWins();
                 miniGridWinsBoard[i][j] = 1;
             } else {
-                player2.wins++;
+                player2.incrementMiniGridWins();
                 miniGridWinsBoard[i][j] = 2;
             }
             return true;
@@ -63,28 +66,28 @@ public class UltimateTicTacToeBackEndGame {
         return false;
     }
 
-    public boolean checkGameForWinOrTie() throws Exception {
+    public boolean isGameOver() throws Exception {
         if (foundWinningRowsColumnsDiagonals(miniGridWinsBoard)) {
             if (player1Turn) {
-                player1.wonGame = true;
+                player1.hasWonGame(true);
             } else {
-                player2.wonGame = true;
+                player2.hasWonGame(true);
             }
         } else if(isGridComplete(miniGridWinsBoard)){
-            if(player1.wins == player2.wins){
+            if(player1.getMiniGridWins() == player2.getMiniGridWins()){
                 isTie = true;
-            }else if(player1.wins > player2.wins){
-                player1.wonGame = true;
+            }else if(player1.getMiniGridWins() > player2.getMiniGridWins()){
+                player1.hasWonGame(true);
             }else{
-                player2.wonGame = true;
+                player2.hasWonGame(true);
             }
         }
-        return player1.wonGame || player2.wonGame || isTie;
+        return player1.hasWonGame() || player2.hasWonGame() || isTie;
     }
 
-    public boolean isGridComplete(GridPane grid){
-        int i = GridPane.getRowIndex(grid);
-        int j = GridPane.getColumnIndex(grid);
+    public boolean isGridComplete(GridPane miniGrid){
+        int i = GridPane.getRowIndex(miniGrid);
+        int j = GridPane.getColumnIndex(miniGrid);
 
         if(isGridComplete(this.grid[i][j])){
             miniGridWinsBoard[i][j] = -1;
@@ -182,23 +185,11 @@ public class UltimateTicTacToeBackEndGame {
         int j = GridPane.getColumnIndex(miniGrid);
 
         if (miniGridWinsBoard[i][j] == 1) {
-            player1.wins--;
+            player1.decrementMiniGridWins();
         } else if(miniGridWinsBoard[i][j] == 2) {
-            player2.wins--;
+            player2.decrementMiniGridWins();
         }
         miniGridWinsBoard[i][j] = 0;
-    }
-
-    public Player getPlayer1() {
-        return player1;
-    }
-
-    public Player getPlayer2() {
-        return player2;
-    }
-
-    public List<WinningTriple> getLastWinningCoordinates(){
-        return lastWinningCoordinates;
     }
 
     public void printUltimateTicTacToeGrid() {
@@ -215,6 +206,8 @@ public class UltimateTicTacToeBackEndGame {
             System.out.println();
         }
 
+        System.out.println("Player 1 mini grid wins: " + getPlayer1().getMiniGridWins());
+        System.out.println("Player 2 mini grid wins: " + getPlayer2().getMiniGridWins());
         System.out.println("=================================================");
     }
 }

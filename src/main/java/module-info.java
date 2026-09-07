@@ -9,7 +9,14 @@ module com.example.ultimatetictactoe {
     requires org.kordamp.ikonli.javafx;
     requires org.kordamp.bootstrapfx.core;
     requires eu.hansolo.tilesfx;
+    requires lombok;
+    requires modelmapper;
+    requires java.sql;
+
+//    opens modelmapper to javafx.graphics;
 
     opens com.example.ultimatetictactoe to javafx.fxml;
     exports com.example.ultimatetictactoe;
+    exports com.example.ultimatetictactoe.artificialintelligence;
+    opens com.example.ultimatetictactoe.artificialintelligence to javafx.fxml;
 }

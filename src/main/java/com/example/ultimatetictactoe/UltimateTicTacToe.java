@@ -1,6 +1,11 @@
 package com.example.ultimatetictactoe;
 
+import com.example.ultimatetictactoe.artificialintelligence.ArtificialIntelligenceEngine;
+import com.example.ultimatetictactoe.artificialintelligence.BestMove;
+import com.example.ultimatetictactoe.artificialintelligence.Coordinates;
+import com.example.ultimatetictactoe.artificialintelligence.MoveEvent;
 import javafx.animation.FadeTransition;
+import javafx.animation.PauseTransition;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -16,6 +21,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.util.HashSet;
 import java.util.List;
@@ -33,6 +39,8 @@ public class UltimateTicTacToe extends Application {
     private Button player1UndoButton;
     private Button player2UndoButton;
     private LastMove lastMove;
+
+    private ArtificialIntelligenceEngine artificialIntelligenceEngine;
 
     public static void main(String[] args) {
         launch(args);
@@ -83,17 +91,21 @@ public class UltimateTicTacToe extends Application {
         primaryStage.setScene(scene);
         primaryStage.setTitle("Ultimate Tic Tac Toe");
         primaryStage.show();
+
+        artificialIntelligenceEngine = new ArtificialIntelligenceEngine();
     }
 
     private void handleUndoButtonClick() {
-        game.player1Turn = !game.player1Turn;
+        game.setPlayer1Turn(!game.isPlayer1Turn());
         toggleTurnLabel();
         Button lastButton = lastMove.getButton();
         GridPane lastMiniGrid = lastMove.getMiniGrid();
         Set<Node> lastClickableMiniGrids = lastMove.getClickableMiniGrids();
 
-        clearClickableMiniGridsHighlighting();
+        clearClickableMiniGrids();
         clickableMiniGrids = lastClickableMiniGrids;
+        // this if-condition is to prevent highlighting in-case undo is hit on very first move,
+        // which results in all 9 minigrids becoming clickable once again.
         if(clickableMiniGrids.size() < 9){
             for(Node node : clickableMiniGrids){
                 GameUtils.toggleMiniGridHighlighting((GridPane) node, true);
@@ -115,16 +127,16 @@ public class UltimateTicTacToe extends Application {
             resultLabel.setVisible(false);
             turnLabel.setVisible(true);
 
-            if(game.isTie){
-                game.isTie = false;
-            } else if(game.getPlayer1().wonGame){
-                game.getPlayer1().wonGame = false;
-            } else if(game.getPlayer2().wonGame){
-                game.getPlayer2().wonGame = false;
+            if(game.isTie()){
+                game.setTie(false);
+            } else if(game.getPlayer1().hasWonGame()){
+                game.getPlayer1().hasWonGame(false);
+            } else if(game.getPlayer2().hasWonGame()){
+                game.getPlayer2().hasWonGame(false);
             }
         }
 
-        if(game.player1Turn) {
+        if(game.isPlayer1Turn()) {
             player1UndoButton.setDisable(true);
         } else{
             player2UndoButton.setDisable(true);
@@ -228,29 +240,24 @@ public class UltimateTicTacToe extends Application {
                 ex.printStackTrace();
             }
         });
+        button.addEventHandler(MoveEvent.MOVE_COMPLETED, eventHandler -> AIMoveHandler());
         return button;
     }
 
     private void handleCellButtonClick(Button button) throws Exception {
         GridPane miniGrid = GameUtils.findParentGridPane(button);
         if(isMiniGridClickable(miniGrid) && isButtonEmpty(button)) {
-            Player player = game.player1Turn ? game.getPlayer1() : game.getPlayer2();
-            Label buttonLabel = new Label();
-            buttonLabel.setText(player.getLabelValue());
-            buttonLabel.setStyle(String.format("-fx-text-fill: %s; -fx-font-weight: bold; -fx-font-size: %dem;", player.getLabelColor(), player.getLabelSize()));
-            button.setGraphic(buttonLabel);
+            Player player = game.isPlayer1Turn() ? game.getPlayer1() : game.getPlayer2();
 
+            player.makeMove(button);
             game.recordMove(button, miniGrid);
             updateMiniGridIfWonOrTie(miniGrid, player);
             lastMove = new LastMove(button, miniGrid, new HashSet<>(clickableMiniGrids)); // record move data in case of undo
+            clearClickableMiniGrids();
+            boolean isGameOver = game.isGameOver();
 
-            clearClickableMiniGridsHighlighting();
-            clickableMiniGrids.clear();
-
-            boolean hasGameEnded = game.checkGameForWinOrTie();
-
-            game.player1Turn = !game.player1Turn;
-            if(!hasGameEnded){
+            game.setPlayer1Turn(!game.isPlayer1Turn());
+            if(!isGameOver){
                 updateClickableMiniGrids(button);
                 toggleTurnLabel();
             }else{
@@ -266,11 +273,39 @@ public class UltimateTicTacToe extends Application {
                 player2UndoButton.setDisable(false);
                 player1UndoButton.setDisable(true);
             }
+
+//            game.printUltimateTicTacToeGrid();
+            if(!game.isPlayer1Turn()){
+                button.fireEvent(new MoveEvent(MoveEvent.MOVE_COMPLETED));
+            }
         }
     }
 
+    public void AIMoveHandler(){
+        PauseTransition pause = new PauseTransition(Duration.seconds(0.5)); // Adjust the duration as needed
+        pause.setOnFinished(event -> {
+            BestMove bestMove = artificialIntelligenceEngine.getBestAIMove(game, clickableMiniGrids);
+            if (bestMove.getMove() != null) {
+                Coordinates miniGridCoordinates = bestMove.getMove().getMiniGrid();
+                GridPane miniGrid = (GridPane) GameUtils.getNodeGivenParentGridAndIndices(mainGrid, miniGridCoordinates.getRow(), miniGridCoordinates.getCol());
+
+                Coordinates buttonCoordinates = bestMove.getMove().getButton();
+                Button button = null;
+                if(miniGrid != null) {
+                    button = (Button) GameUtils.getNodeGivenParentGridAndIndices(miniGrid, buttonCoordinates.getRow(), buttonCoordinates.getCol());
+                }
+
+                if(button != null) {
+                    button.fire();
+                    button.requestFocus();
+                }
+            }
+        });
+        pause.play();
+    }
+
     private void toggleTurnLabel(){
-        Player player = game.player1Turn ? game.getPlayer1() : game.getPlayer2();
+        Player player = game.isPlayer1Turn() ? game.getPlayer1() : game.getPlayer2();
         turnLabel.setText(String.format("Player %s's Turn", player.getLabelValue()));
         turnLabel.setStyle(String.format("-fx-font-size: %d; -fx-font-weight: bold; -fx-text-fill: %s;", TURN_LABEL_FONT_SIZE, player.getLabelColor()));
     }
@@ -280,17 +315,17 @@ public class UltimateTicTacToe extends Application {
     }
 
     private void showEndGameResult(){
-        if (game.isTie) {
+        if (game.isTie()) {
             setCommonLabelStyles("IT'S A TIE!", "black", "black");
         } else {
-            Player winner = game.getPlayer1().wonGame ? game.getPlayer1() : game.getPlayer2();
+            Player winner = game.getPlayer1().hasWonGame() ? game.getPlayer1() : game.getPlayer2();
             setCommonLabelStyles(String.format("PLAYER %s WON!", winner.getLabelValue()), winner.getLabelColor(), winner.getLabelColor());
         }
 
         List<WinningTriple> winningCoordinates = game.getLastWinningCoordinates();
         if( !winningCoordinates.isEmpty() ){
             GameUtils.setWinningMiniGrids(mainGrid, winningCoordinates);
-            GameUtils.flashBackGrounds(game.getPlayer1().wonGame ? GameUtils.getPlayer1MiniGridBackground() : GameUtils.getPlayer2MiniGridBackground());
+            GameUtils.flashBackGrounds(game.getPlayer1().hasWonGame() ? GameUtils.getPlayer1MiniGridBackground() : GameUtils.getPlayer2MiniGridBackground());
         }
 
         FadeTransition fadeTransition = GameUtils.getFadeTransition(resultLabel);
@@ -327,16 +362,17 @@ public class UltimateTicTacToe extends Application {
         return clickableMiniGrids.contains(miniGrid);
     }
 
-    private void clearClickableMiniGridsHighlighting(){
+    private void clearClickableMiniGrids(){
         clickableMiniGrids.forEach(miniGrid -> GameUtils.toggleMiniGridHighlighting((GridPane) miniGrid, false));
+        clickableMiniGrids.clear();
     }
 
     private void updateClickableMiniGrids(Button button) {
         int buttonX = GridPane.getRowIndex(button);
         int buttonY = GridPane.getColumnIndex(button);
-        GridPane nextMiniGrid = GameUtils.getGridPaneGivenIndices(mainGrid, buttonX, buttonY);
+        GridPane nextMiniGrid = (GridPane) GameUtils.getNodeGivenParentGridAndIndices(mainGrid, buttonX, buttonY);
 
-        if(!nextMiniGrid.isDisabled()){
+        if(nextMiniGrid != null && !nextMiniGrid.isDisabled()){
             GameUtils.toggleMiniGridHighlighting(nextMiniGrid, true);
             clickableMiniGrids.add(nextMiniGrid);
         }else{
